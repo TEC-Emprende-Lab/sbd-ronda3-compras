@@ -51,10 +51,10 @@ export const STATUS_LABELS: Record<TramiteStatus, string> = {
 };
 
 export const STATUS_COLORS: Record<TramiteStatus, string> = {
-  en_proceso_firmas: "bg-orange-50 text-orange-700 border border-orange-200",
-  en_sistema_fundatec: "bg-amber-50 text-amber-700 border border-amber-200",
-  aprobado: "bg-green-50 text-green-700 border border-green-200",
-  rechazado: "bg-red-50 text-red-700 border border-red-200",
+  en_proceso_firmas:   "badge badge-orange",
+  en_sistema_fundatec: "badge badge-amber",
+  aprobado:            "badge badge-green",
+  rechazado:           "badge badge-red",
 };
 
 // Checklist items per tramite type

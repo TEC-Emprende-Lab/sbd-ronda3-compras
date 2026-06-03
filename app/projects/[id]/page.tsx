@@ -18,32 +18,33 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
   const { data: tramites } = await supabase.from("tramites").select("*")
     .eq("project_id", project.id).order("created_at", { ascending: false });
 
-  const all = tramites || [];
-  const gastadoAprobado = all.filter((t) => t.status === "aprobado").reduce((s, t) => s + t.amount, 0);
+  const all              = tramites || [];
+  const gastadoAprobado  = all.filter((t) => t.status === "aprobado").reduce((s, t) => s + t.amount, 0);
   const gastadoPendiente = all.filter((t) => t.status !== "aprobado" && t.status !== "rechazado").reduce((s, t) => s + t.amount, 0);
-  const disponible = project.budget - gastadoAprobado - gastadoPendiente;
-  const usedPct = Math.min(100, ((gastadoAprobado + gastadoPendiente) / project.budget) * 100);
-  const isOverBudget = disponible < 0;
-  const byStatus = (s: TramiteStatus) => all.filter((t) => t.status === s);
+  const disponible       = project.budget - gastadoAprobado - gastadoPendiente;
+  const usedPct          = Math.min(100, ((gastadoAprobado + gastadoPendiente) / project.budget) * 100);
+  const isOverBudget     = disponible < 0;
+  const byStatus         = (s: TramiteStatus) => all.filter((t) => t.status === s);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+    <div>
+      {/* Breadcrumb + header */}
+      <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <Link href="/" className="inline-flex items-center gap-1 text-xs font-semibold text-muted hover:text-orange transition-colors uppercase tracking-wider mb-2">
-            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+          <Link href="/" className="caps flex items-center gap-1 mb-2"
+            style={{ color: "var(--gray)", textDecoration: "none" }}>
+            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
             </svg>
             Proyectos
           </Link>
-          <h1 className="font-display text-2xl text-ink">{project.name}</h1>
-          <p className="text-sm text-muted mt-1">
+          <h1 className="h1">{project.name}</h1>
+          <p className="text-sm mt-1" style={{ color: "var(--gray)" }}>
             {project.category === "prototipado" ? "Prototipado" : "Puesta en Marcha"} · Proyecto #{project.id}
           </p>
         </div>
-        <Link href={`/tramites/nuevo?project=${project.id}`} className="btn-primary shrink-0">
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+        <Link href={`/tramites/nuevo?project=${project.id}`} className="btn btn-orange">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
           Nuevo trámite
@@ -51,70 +52,73 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Budget panel */}
-      <div className="card p-6">
-        <div className="grid grid-cols-4 gap-4 mb-5">
+      <div className="card card-padded mb-6">
+        <div className="grid grid-cols-4 gap-6 mb-5">
           {[
-            { label: "Presupuesto total", value: formatCRC(project.budget), color: "text-ink" },
-            { label: "Gastado aprobado", value: formatCRC(gastadoAprobado), color: "text-success" },
-            { label: "En proceso", value: formatCRC(gastadoPendiente), color: "text-orange" },
-            { label: "Disponible", value: (isOverBudget ? "−" : "") + formatCRC(Math.abs(disponible)), color: isOverBudget ? "text-orange-d" : "text-success" },
+            { label: "Presupuesto total", value: formatCRC(project.budget), color: "var(--black)" },
+            { label: "Gastado aprobado",  value: formatCRC(gastadoAprobado),  color: "var(--green)" },
+            { label: "En proceso",        value: formatCRC(gastadoPendiente), color: "var(--orange)" },
+            {
+              label: "Disponible",
+              value: (isOverBudget ? "−" : "") + formatCRC(Math.abs(disponible)),
+              color: isOverBudget ? "var(--orange-d)" : "var(--green)",
+            },
           ].map((s) => (
             <div key={s.label}>
-              <p className="text-xs text-muted mb-1">{s.label}</p>
-              <p className={`font-display text-xl ${s.color}`}>{s.value}</p>
+              <p className="stat-label">{s.label}</p>
+              <p className="stat-num" style={{ color: s.color, fontSize: 20 }}>{s.value}</p>
             </div>
           ))}
         </div>
         <div className="pbar-wrap">
-          <div className={`pbar ${isOverBudget ? "bg-orange-d" : "bg-orange"}`}
+          <div className={`pbar ${isOverBudget ? "pbar-red" : "pbar-orange"}`}
             style={{ width: `${Math.min(100, usedPct)}%` }} />
         </div>
-        <p className="mt-2 text-xs text-muted">
-          Todos los trámites aprobados descuentan del presupuesto.
+        <p className="text-xs mt-2" style={{ color: "var(--gray)" }}>
+          Todos los trámites aprobados descuentan del presupuesto. Los rechazados no afectan el disponible.
         </p>
       </div>
 
-      {/* Status chips */}
-      <div className="flex flex-wrap gap-2">
+      {/* Status summary */}
+      <div className="flex flex-wrap gap-2 mb-6">
         {(["en_proceso_firmas", "en_sistema_fundatec", "aprobado", "rechazado"] as TramiteStatus[]).map((s) => {
           const count = byStatus(s).length;
           if (!count) return null;
           return (
-            <span key={s} className={`badge ${STATUS_COLORS[s]}`}>
+            <span key={s} className={STATUS_COLORS[s]}>
               {STATUS_LABELS[s]} · {count}
             </span>
           );
         })}
       </div>
 
-      {/* Table */}
+      {/* Tramites table */}
       <div className="card">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-cream-2 bg-cream/50">
-          <h2 className="font-semibold text-ink text-sm">
-            Trámites <span className="text-muted font-normal">({all.length})</span>
+        <div className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: "1px solid var(--cream-2)", background: "var(--cream-2)", borderRadius: "12px 12px 0 0" }}>
+          <h2 className="h3" style={{ fontSize: 14 }}>
+            Trámites <span style={{ color: "var(--gray)", fontWeight: 400 }}>({all.length})</span>
           </h2>
         </div>
 
         {all.length === 0 ? (
           <div className="px-6 py-14 text-center">
-            <p className="text-sm text-muted">No hay trámites registrados.</p>
-            <Link href={`/tramites/nuevo?project=${project.id}`} className="mt-3 inline-flex btn-primary text-xs">
+            <p className="text-sm" style={{ color: "var(--gray)" }}>No hay trámites registrados.</p>
+            <Link href={`/tramites/nuevo?project=${project.id}`} className="btn btn-orange btn-sm mt-3 inline-flex">
               Agregar el primero
             </Link>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-cream-2/60">
+            <table className="ttable">
+              <thead>
                 <tr>
-                  {["Tipo", "N° Factura", "Proveedor", "Descripción", "Monto", "Fecha", "Estado", "Check", ""].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-muted">
-                      {h}
-                    </th>
+                  {["Tipo", "N° Factura", "Proveedor", "Descripción", "Monto", "Fecha", "Estado", "Checklist", ""].map((h) => (
+                    <th key={h}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-cream-2">
+              <tbody>
                 {all.map((t) => <TramiteRow key={t.id} tramite={t} />)}
               </tbody>
             </table>
@@ -127,60 +131,64 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
 function TramiteRow({ tramite: t }: { tramite: Tramite }) {
   const checkItems = Object.values(t.checklist || {});
-  const checked = checkItems.filter(Boolean).length;
-  const total = checkItems.length;
-  const allDone = total > 0 && checked === total;
+  const checked    = checkItems.filter(Boolean).length;
+  const total      = checkItems.length;
+  const allDone    = total > 0 && checked === total;
 
-  const typeColors: Record<string, string> = {
-    reintegro: "bg-purple-50 text-purple-700",
-    uso_tc: "bg-amber-50 text-amber-700",
-    factura: "bg-blue-50 text-blue-700",
+  const typeBadge: Record<string, string> = {
+    reintegro: "badge badge-purple",
+    uso_tc:    "badge badge-amber",
+    factura:   "badge badge-blue",
   };
 
   return (
-    <tr className="hover:bg-cream/60 transition-colors">
-      <td className="px-4 py-3 whitespace-nowrap">
-        <span className={`badge text-[10px] ${typeColors[t.type] ?? "bg-cream-2 text-muted"}`}>
+    <tr>
+      <td>
+        <span className={typeBadge[t.type] ?? "badge badge-gray"}>
           {TRAMITE_TYPE_LABELS[t.type as keyof typeof TRAMITE_TYPE_LABELS]}
         </span>
       </td>
-      <td className="px-4 py-3">
-        <span className="font-mono text-[11px] text-muted">{t.invoice_number?.slice(0, 20) ?? "—"}</span>
+      <td>
+        <span className="font-mono text-xs" style={{ color: "var(--gray)" }}>
+          {t.invoice_number?.slice(0, 22) ?? "—"}
+        </span>
       </td>
-      <td className="px-4 py-3 max-w-[130px]">
-        <span className="text-xs text-ink/70 truncate block">{t.supplier ?? "—"}</span>
+      <td style={{ maxWidth: 130 }}>
+        <span className="block truncate text-xs">{t.supplier ?? "—"}</span>
       </td>
-      <td className="px-4 py-3 max-w-[160px]">
-        <span className="text-xs text-muted truncate block">{t.description ?? "—"}</span>
+      <td style={{ maxWidth: 160 }}>
+        <span className="block truncate text-xs" style={{ color: "var(--gray)" }}>{t.description ?? "—"}</span>
       </td>
-      <td className="px-4 py-3 whitespace-nowrap text-right">
-        <span className="text-xs font-semibold text-ink">{formatCRC(t.amount)}</span>
+      <td className="text-right">
+        <span className="text-sm font-semibold">{formatCRC(t.amount)}</span>
       </td>
-      <td className="px-4 py-3 whitespace-nowrap">
-        <span className="text-[11px] text-muted">
+      <td>
+        <span className="text-xs" style={{ color: "var(--gray)" }}>
           {t.submission_date
             ? new Date(t.submission_date + "T00:00:00").toLocaleDateString("es-CR", { day: "2-digit", month: "2-digit", year: "2-digit" })
             : "—"}
         </span>
       </td>
-      <td className="px-4 py-3 whitespace-nowrap">
+      <td>
         <StatusUpdater tramiteId={t.id} currentStatus={t.status as TramiteStatus} />
       </td>
-      <td className="px-4 py-3 whitespace-nowrap">
+      <td>
         {total > 0 ? (
           <div className="flex items-center gap-1.5">
-            <div className="pbar-wrap" style={{ width: 48 }}>
-              <div className={`pbar ${allDone ? "bg-success" : "bg-orange"}`}
+            <div className="pbar-wrap" style={{ width: 44 }}>
+              <div className={`pbar ${allDone ? "pbar-green" : "pbar-orange"}`}
                 style={{ width: `${(checked / total) * 100}%` }} />
             </div>
-            <span className={`text-[10px] font-semibold ${allDone ? "text-success" : "text-muted"}`}>
+            <span className="text-xs font-semibold"
+              style={{ color: allDone ? "var(--green)" : "var(--gray)" }}>
               {checked}/{total}
             </span>
           </div>
-        ) : <span className="text-muted text-xs">—</span>}
+        ) : <span style={{ color: "var(--gray)" }}>—</span>}
       </td>
-      <td className="px-4 py-3 whitespace-nowrap">
-        <Link href={`/tramites/${t.id}`} className="text-[11px] font-semibold text-orange hover:text-orange-d transition-colors">
+      <td>
+        <Link href={`/tramites/${t.id}`} className="text-xs font-semibold"
+          style={{ color: "var(--orange)", textDecoration: "none" }}>
           Editar →
         </Link>
       </td>
