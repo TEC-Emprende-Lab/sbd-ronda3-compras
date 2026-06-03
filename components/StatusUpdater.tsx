@@ -22,16 +22,35 @@ export default function StatusUpdater({
   const router = useRouter();
   const [status, setStatus] = useState(currentStatus);
   const [loading, setLoading] = useState(false);
+  const [askingFundatec, setAskingFundatec] = useState(false);
+  const [fundatecNumber, setFundatecNumber] = useState("");
 
-  async function advance() {
-    const next = NEXT_STATUS[status];
-    if (!next) return;
+  const nextStatus = NEXT_STATUS[status];
+
+  async function handleAdvance() {
+    if (nextStatus === "aprobado") {
+      setAskingFundatec(true);
+      return;
+    }
+    await applyStatus(nextStatus!, null);
+  }
+
+  async function handleApprove() {
+    await applyStatus("aprobado", fundatecNumber || null);
+    setAskingFundatec(false);
+    setFundatecNumber("");
+  }
+
+  async function applyStatus(newStatus: TramiteStatus, fundatecNum: string | null) {
     setLoading(true);
     const supabase = createClient();
-    const update: { status: TramiteStatus; approval_date?: string } = { status: next };
-    if (next === "aprobado") update.approval_date = new Date().toISOString().split("T")[0];
+    const update: Record<string, unknown> = { status: newStatus };
+    if (newStatus === "aprobado") {
+      update.approval_date = new Date().toISOString().split("T")[0];
+      if (fundatecNum) update.fundatec_number = fundatecNum;
+    }
     await supabase.from("tramites").update(update).eq("id", tramiteId);
-    setStatus(next);
+    setStatus(newStatus);
     setLoading(false);
     router.refresh();
   }
@@ -45,7 +64,34 @@ export default function StatusUpdater({
     router.refresh();
   }
 
-  const nextStatus = NEXT_STATUS[status];
+  if (askingFundatec) {
+    return (
+      <div className="flex items-center gap-1">
+        <input
+          type="text"
+          value={fundatecNumber}
+          onChange={(e) => setFundatecNumber(e.target.value)}
+          placeholder="N° FUNDATEC (opcional)"
+          className="text-xs border border-gray-300 rounded px-2 py-1 w-40 focus:outline-none focus:border-brand-500"
+          autoFocus
+          onKeyDown={(e) => { if (e.key === "Enter") handleApprove(); if (e.key === "Escape") setAskingFundatec(false); }}
+        />
+        <button
+          onClick={handleApprove}
+          disabled={loading}
+          className="text-xs bg-green-600 text-white rounded px-2 py-1 hover:bg-green-700 disabled:opacity-50"
+        >
+          ✓
+        </button>
+        <button
+          onClick={() => setAskingFundatec(false)}
+          className="text-xs text-gray-400 hover:text-gray-600"
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-1">
@@ -54,7 +100,7 @@ export default function StatusUpdater({
       </span>
       {nextStatus && (
         <button
-          onClick={advance}
+          onClick={handleAdvance}
           disabled={loading}
           title={`Avanzar a: ${STATUS_LABELS[nextStatus]}`}
           className="text-gray-400 hover:text-green-600 transition-colors disabled:opacity-50"

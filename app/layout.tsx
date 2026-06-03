@@ -26,6 +26,7 @@ export default function RootLayout({
               </Link>
               <nav className="flex items-center gap-4 text-sm">
                 <Link href="/" className="hover:text-brand-100 transition-colors">Proyectos</Link>
+                <Link href="/reporte" className="hover:text-brand-100 transition-colors">Reporte</Link>
                 <Link href="/tramites/nuevo" className="rounded-md bg-white/20 px-3 py-1.5 font-medium hover:bg-white/30 transition-colors">
                   + Nuevo trámite
                 </Link>
