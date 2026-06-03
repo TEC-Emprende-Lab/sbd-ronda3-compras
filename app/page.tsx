@@ -5,8 +5,8 @@ import Link from "next/link";
 
 interface ProjectWithStats extends Project {
   tramites: Tramite[];
-  reintegrosTotal: number;
-  reintegrosPendientes: number;
+  gastadoAprobado: number;
+  gastadoPendiente: number;
   disponible: number;
   enProceso: number;
 }
@@ -35,16 +35,16 @@ export default async function DashboardPage() {
 
   const projectsWithStats: ProjectWithStats[] = (projects || []).map((p) => {
     const pts = tramitesByProject[p.id] || [];
-    const reintegros = pts.filter((t) => t.type === "reintegro" && t.status !== "rechazado");
-    const reintegrosAprobados = reintegros.filter((t) => t.status === "aprobado").reduce((s, t) => s + t.amount, 0);
-    const reintegrosPendientes = reintegros.filter((t) => t.status !== "aprobado").reduce((s, t) => s + t.amount, 0);
+    const activos = pts.filter((t) => t.status !== "rechazado");
+    const gastadoAprobado = activos.filter((t) => t.status === "aprobado").reduce((s, t) => s + t.amount, 0);
+    const gastadoPendiente = activos.filter((t) => t.status !== "aprobado").reduce((s, t) => s + t.amount, 0);
     const enProceso = pts.filter((t) => t.status !== "aprobado" && t.status !== "rechazado").length;
     return {
       ...p,
       tramites: pts,
-      reintegrosTotal: reintegrosAprobados,
-      reintegrosPendientes,
-      disponible: p.budget - reintegrosAprobados - reintegrosPendientes,
+      gastadoAprobado,
+      gastadoPendiente,
+      disponible: p.budget - gastadoAprobado - gastadoPendiente,
       enProceso,
     };
   });
@@ -53,8 +53,8 @@ export default async function DashboardPage() {
   const puestaEnMarcha = projectsWithStats.filter((p) => p.category === "puesta_en_marcha");
 
   const totalBudget = projectsWithStats.reduce((s, p) => s + p.budget, 0);
-  const totalUsed = projectsWithStats.reduce((s, p) => s + p.reintegrosTotal, 0);
-  const totalPending = projectsWithStats.reduce((s, p) => s + p.reintegrosPendientes, 0);
+  const totalUsed = projectsWithStats.reduce((s, p) => s + p.gastadoAprobado, 0);
+  const totalPending = projectsWithStats.reduce((s, p) => s + p.gastadoPendiente, 0);
   const totalTramites = (tramites || []).length;
   const totalEnProceso = (tramites || []).filter(
     (t) => t.status !== "aprobado" && t.status !== "rechazado"
@@ -108,8 +108,8 @@ export default async function DashboardPage() {
 }
 
 function ProjectCard({ project: p }: { project: ProjectWithStats }) {
-  const usedPct = Math.min(100, ((p.reintegrosTotal + p.reintegrosPendientes) / p.budget) * 100);
-  const approvedPct = Math.min(100, (p.reintegrosTotal / p.budget) * 100);
+  const usedPct = Math.min(100, ((p.gastadoAprobado + p.gastadoPendiente) / p.budget) * 100);
+  const approvedPct = Math.min(100, (p.gastadoAprobado / p.budget) * 100);
 
   const aprobados = p.tramites.filter((t) => t.status === "aprobado").length;
   const rechazados = p.tramites.filter((t) => t.status === "rechazado").length;

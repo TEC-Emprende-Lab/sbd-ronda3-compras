@@ -33,17 +33,17 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
   const all = tramites || [];
 
-  const reintegrosAprobados = all
-    .filter((t) => t.type === "reintegro" && t.status === "aprobado")
+  const gastadoAprobado = all
+    .filter((t) => t.status === "aprobado")
     .reduce((s, t) => s + t.amount, 0);
 
-  const reintegrosPendientes = all
-    .filter((t) => t.type === "reintegro" && t.status !== "aprobado" && t.status !== "rechazado")
+  const gastadoPendiente = all
+    .filter((t) => t.status !== "aprobado" && t.status !== "rechazado")
     .reduce((s, t) => s + t.amount, 0);
 
-  const disponible = project.budget - reintegrosAprobados - reintegrosPendientes;
-  const usedPct = Math.min(100, ((reintegrosAprobados + reintegrosPendientes) / project.budget) * 100);
-  const approvedPct = Math.min(100, (reintegrosAprobados / project.budget) * 100);
+  const disponible = project.budget - gastadoAprobado - gastadoPendiente;
+  const usedPct = Math.min(100, ((gastadoAprobado + gastadoPendiente) / project.budget) * 100);
+  const approvedPct = Math.min(100, (gastadoAprobado / project.budget) * 100);
 
   const byStatus = (status: TramiteStatus) => all.filter((t) => t.status === status);
 
@@ -75,12 +75,12 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 text-sm">
           <Stat label="Presupuesto total" value={formatCRC(project.budget)} color="text-gray-900" />
-          <Stat label="Reintegros aprobados" value={formatCRC(reintegrosAprobados)} color="text-green-700" />
-          <Stat label="Reintegros pendientes" value={formatCRC(reintegrosPendientes)} color="text-orange-600" />
+          <Stat label="Gastado aprobado" value={formatCRC(gastadoAprobado)} color="text-green-700" />
+          <Stat label="En proceso" value={formatCRC(gastadoPendiente)} color="text-orange-600" />
           <Stat label="Disponible" value={formatCRC(disponible)} color={disponible < 0 ? "text-red-700 font-bold" : "text-brand-700"} />
         </div>
         <p className="mt-3 text-xs text-gray-400">
-          Nota: solo los reintegros afectan el presupuesto. Órdenes de compra y facturas se registran como historial.
+          Todos los trámites aprobados descuentan del presupuesto. Los rechazados no afectan el disponible.
         </p>
       </div>
 
