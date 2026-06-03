@@ -114,21 +114,11 @@ function ProjectCard({ project: p }: { project: ProjectWithStats }) {
   const aprobados    = p.tramites.filter((t) => t.status === "aprobado").length;
 
   return (
-    <Link href={`/projects/${p.id}`}
-      className="card block p-5 group"
-      style={{ transition: "border-color .15s, box-shadow .15s" }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = "var(--orange)";
-        (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(232,82,26,.1)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-        (e.currentTarget as HTMLElement).style.boxShadow = "var(--shadow-card)";
-      }}>
+    <Link href={`/projects/${p.id}`} className="card card-project p-5">
       <div className="flex items-start justify-between gap-2 mb-4">
         <div className="min-w-0">
           <span className="caps block mb-0.5" style={{ fontSize: 10 }}>#{p.id}</span>
-          <h3 className="text-sm font-semibold leading-snug line-clamp-2" style={{ color: "var(--black)" }}>
+          <h3 className="card-project-title text-sm font-semibold leading-snug line-clamp-2" style={{ color: "var(--black)", transition: "color .15s" }}>
             {p.name}
           </h3>
         </div>

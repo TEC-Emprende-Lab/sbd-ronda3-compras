@@ -138,6 +138,20 @@ body {
 .pbar-orange { background: var(--orange); }
 .pbar-red    { background: var(--orange-d); }
 
+/* ── Project card hover ────────────────────────────────────── */
+.card-project {
+  transition: border-color .15s, box-shadow .15s;
+  text-decoration: none;
+  display: block;
+}
+.card-project:hover {
+  border-color: var(--orange) !important;
+  box-shadow: 0 4px 12px rgba(232,82,26,.12);
+}
+.card-project:hover .card-project-title {
+  color: var(--orange);
+}
+
 /* ── Stat card ─────────────────────────────────────────────── */
 .stat-num   { font-size: 26px; font-weight: 700; line-height: 1.1; }
 .stat-label { font-size: 12px; color: var(--gray); margin-top: 2px; }
