@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
+import { parseCostaRicaXML } from "@/lib/xml-parser";
 import {
   CHECKLISTS,
   TRAMITE_TYPE_LABELS,
@@ -39,6 +40,31 @@ export default function TramiteForm({ projects, defaultProjectId, tramite }: Pro
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [xmlMsg, setXmlMsg] = useState("");
+  const xmlInputRef = useRef<HTMLInputElement>(null);
+
+  function handleXmlUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      const parsed = parseCostaRicaXML(text);
+      if (!parsed) {
+        setXmlMsg("No se pudo leer el XML. Verifica que sea una factura electrónica de Hacienda.");
+        return;
+      }
+      if (parsed.invoiceNumber) setInvoiceNumber(parsed.invoiceNumber);
+      if (parsed.supplier)      setSupplier(parsed.supplier);
+      if (parsed.amount > 0)    setAmount(parsed.amount.toString());
+      if (parsed.date)          setSubmissionDate(parsed.date);
+      if (parsed.description)   setDescription(parsed.description);
+      handleTypeChange(parsed.detectedType);
+      setXmlMsg(`✓ XML leído: ${parsed.supplier || "sin nombre"} — ₡${parsed.amount.toLocaleString("es-CR")}`);
+    };
+    reader.readAsText(file, "UTF-8");
+    if (xmlInputRef.current) xmlInputRef.current.value = "";
+  }
 
   // When type changes, preserve checked items that exist in new type
   function handleTypeChange(newType: TramiteType) {
@@ -102,6 +128,36 @@ export default function TramiteForm({ projects, defaultProjectId, tramite }: Pro
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* XML uploader */}
+      <div className="card p-4 border-dashed border-2 border-brand-200 bg-brand-50">
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <p className="text-sm font-medium text-brand-700">Cargar factura electrónica (XML)</p>
+            <p className="text-xs text-brand-500 mt-0.5">
+              Sube el XML de Hacienda y los campos se rellenan automáticamente
+            </p>
+          </div>
+          <label className="btn-primary cursor-pointer shrink-0">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+            </svg>
+            Seleccionar XML
+            <input
+              ref={xmlInputRef}
+              type="file"
+              accept=".xml,application/xml,text/xml"
+              onChange={handleXmlUpload}
+              className="hidden"
+            />
+          </label>
+        </div>
+        {xmlMsg && (
+          <p className={`mt-2 text-xs font-medium ${xmlMsg.startsWith("✓") ? "text-green-700" : "text-red-600"}`}>
+            {xmlMsg}
+          </p>
+        )}
+      </div>
+
       {error && (
         <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
           {error}
