@@ -4,7 +4,7 @@ export interface ParsedInvoice {
   amount: number;
   date: string;
   description: string;
-  detectedType: "factura" | "orden_compra" | "reintegro";
+  detectedType: "factura" | "reintegro" | "uso_tc";
 }
 
 export function parseCostaRicaXML(xmlText: string): ParsedInvoice | null {
@@ -54,7 +54,6 @@ export function parseCostaRicaXML(xmlText: string): ParsedInvoice | null {
     const rootName = doc.documentElement.localName.toLowerCase();
     let detectedType: ParsedInvoice["detectedType"] = "factura";
     if (rootName.includes("tiquete")) detectedType = "reintegro";
-    else if (rootName.includes("nota")) detectedType = "factura";
 
     if (!invoiceNumber && !amount) return null;
 
