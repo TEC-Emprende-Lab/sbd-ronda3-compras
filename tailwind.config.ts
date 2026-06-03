@@ -9,35 +9,43 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        navy: {
-          DEFAULT: "#1A2332",
-          light: "#243042",
-          dark: "#111826",
+        cream: {
+          DEFAULT: "#FAF6EE",
+          2: "#F2EBD9",
+          3: "#E8DCC8",
         },
-        brand: {
-          DEFAULT: "#F4821F",
-          light: "#F9A54A",
-          dark: "#D4690A",
+        orange: {
+          DEFAULT: "#E8651A",
+          l: "#F4894A",
+          d: "#C04E0E",
         },
-        gold: {
-          DEFAULT: "#E8A020",
-          light: "#F2BE55",
-          dark: "#C4830A",
+        ink: {
+          DEFAULT: "#1A1612",
+          2: "#2E2820",
+        },
+        border: "#D4C8B0",
+        muted: "#8A8070",
+        success: {
+          DEFAULT: "#3D7A5A",
+          light: "#E4F0E8",
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "Fira Code", "monospace"],
+        display: ["DM Serif Display", "Georgia", "serif"],
+        sans: ["DM Sans", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
+      },
+      borderRadius: {
+        sm: "6px",
+        DEFAULT: "8px",
+        lg: "12px",
+        xl: "16px",
+        "2xl": "20px",
       },
       boxShadow: {
-        glass: "0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08)",
-        glow: "0 0 20px rgba(244,130,31,0.25)",
-        card: "0 2px 12px rgba(26,35,50,0.08)",
-      },
-      backgroundImage: {
-        "navy-gradient": "linear-gradient(135deg, #1A2332 0%, #243042 100%)",
-        "brand-gradient": "linear-gradient(135deg, #F4821F 0%, #E8A020 100%)",
-        "card-gradient": "linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)",
+        card: "0 1px 4px rgba(26,22,18,0.08), 0 0 0 1px rgba(212,200,176,0.4)",
+        modal: "0 8px 32px rgba(26,22,18,0.16)",
+        orange: "0 4px 16px rgba(232,101,26,0.25)",
       },
     },
   },
