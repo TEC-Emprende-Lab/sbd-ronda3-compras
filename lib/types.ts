@@ -1,6 +1,6 @@
 export type Category = "prototipado" | "puesta_en_marcha";
 
-export type TramiteType = "orden_compra" | "factura" | "reintegro";
+export type TramiteType = "factura" | "reintegro" | "uso_tc";
 
 export type TramiteStatus =
   | "en_proceso_firmas"
@@ -37,9 +37,9 @@ export interface TramiteWithProject extends Tramite {
 }
 
 export const TRAMITE_TYPE_LABELS: Record<TramiteType, string> = {
-  orden_compra: "Orden de Compra",
-  factura: "Factura",
+  factura: "Compra por OC",
   reintegro: "Reintegro",
+  uso_tc: "Uso de TC",
 };
 
 export const STATUS_LABELS: Record<TramiteStatus, string> = {
@@ -58,16 +58,6 @@ export const STATUS_COLORS: Record<TramiteStatus, string> = {
 
 // Checklist items per tramite type
 export const CHECKLISTS: Record<TramiteType, Record<string, string>> = {
-  orden_compra: {
-    morosidad: "Morosidad",
-    justificacion: "Justificación",
-    detalles_compra: "Detalles de compra",
-    fechas: "Fechas",
-    monto: "Monto",
-    minuta: "Minuta",
-    colones: "Colones",
-    nombre_funda: "A nombre de FUNDA",
-  },
   factura: {
     morosidad: "Morosidad",
     justificacion: "Justificación",
@@ -84,6 +74,15 @@ export const CHECKLISTS: Record<TramiteType, Record<string, string>> = {
     justificacion: "Justificación",
     recibo_factura: "Recibo/Factura",
     nombre_beneficiario: "A nombre del beneficiario",
+    detalles_compra: "Detalles de compra",
+    fechas: "Fechas",
+    monto: "Monto",
+    colones: "Colones",
+  },
+  uso_tc: {
+    morosidad: "Morosidad",
+    justificacion: "Justificación",
+    formulario_tc: "Formulario P-02 TC",
     detalles_compra: "Detalles de compra",
     fechas: "Fechas",
     monto: "Monto",

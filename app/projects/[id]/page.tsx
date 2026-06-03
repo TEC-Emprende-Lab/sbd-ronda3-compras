@@ -157,9 +157,9 @@ function TramiteRow({ tramite: t }: { tramite: Tramite }) {
         <span className={`rounded px-2 py-0.5 text-xs font-medium ${
           t.type === "reintegro"
             ? "bg-purple-100 text-purple-700"
-            : t.type === "factura"
-            ? "bg-blue-100 text-blue-700"
-            : "bg-teal-100 text-teal-700"
+            : t.type === "uso_tc"
+            ? "bg-amber-100 text-amber-700"
+            : "bg-blue-100 text-blue-700"
         }`}>
           {TRAMITE_TYPE_LABELS[t.type as keyof typeof TRAMITE_TYPE_LABELS]}
         </span>
