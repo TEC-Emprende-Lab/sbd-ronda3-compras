@@ -27,13 +27,15 @@ export default function ReporteClient({ byDate, dates }: Props) {
   const tramites = byDate[selectedDate] ?? [];
 
   function formatDate(d: string) {
-    return new Date(d + "T00:00:00").toLocaleDateString("es-CR", {
+    const raw = new Date(d + "T00:00:00").toLocaleDateString("es-CR", {
       weekday: "long", year: "numeric", month: "long", day: "numeric",
     });
+    // Fix: toLocaleDateString capitalizes prepositions in some browsers
+    return raw.replace(/ De /g, " de ");
   }
 
   function buildLine(t: Tramite): string {
-    const tracking = t.fundatec_number ? `${t.fundatec_number} - ` : "(N° FUNDATEC) - ";
+    const tracking = t.fundatec_number ? `${t.fundatec_number} - ` : "____________ - ";
     const proyecto = t.project?.name ?? "Proyecto";
     const detalle = [t.supplier, t.description].filter(Boolean).join(" — ") || t.invoice_number || "";
     return `* ${tracking}${proyecto}: ${detalle}`;
