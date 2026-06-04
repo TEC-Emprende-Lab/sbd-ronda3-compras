@@ -12,29 +12,30 @@ import type { ParsedInvoice } from "./xml-parser";
  */
 export async function parsePDF(file: File): Promise<ParsedInvoice | null> {
   try {
-    // Carga dinámica de pdfjs-dist para evitar problemas de SSR
     const pdfjsLib = await import("pdfjs-dist");
 
-    // Usar worker fake para evitar problemas con Webpack en Next.js
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+    // Worker via CDN — evita conflictos con bundler de Next.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({
-      data: arrayBuffer,
-      useWorkerFetch: false,
-      isEvalSupported: false,
-      useSystemFonts: true,
-    }).promise;
+    const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
+    const pdf = await loadingTask.promise;
 
-    // Extraer todo el texto del PDF
     let fullText = "";
-    for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) {
+    const pages = Math.min(pdf.numPages, 6);
+    for (let i = 1; i <= pages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
       const pageText = content.items
         .map((item) => ("str" in item ? (item as { str: string }).str : ""))
         .join(" ");
-      fullText += pageText + "\n";
+      fullText += pageText + " ";
+    }
+
+    if (!fullText.trim()) {
+      // El PDF es imagen escaneada — no se puede leer sin OCR
+      return { invoiceNumber: "", supplier: "", amount: 0, date: "", description: "PDF de imagen — ingresá los datos manualmente", detectedType: "factura" };
     }
 
     return parseInvoiceText(fullText);
