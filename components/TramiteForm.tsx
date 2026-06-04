@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { parseCostaRicaXML } from "@/lib/xml-parser";
+import { parsePDF } from "@/lib/pdf-parser";
 import {
   CHECKLISTS,
   TRAMITE_TYPE_LABELS,
@@ -43,26 +44,34 @@ export default function TramiteForm({ projects, defaultProjectId, tramite }: Pro
   const [xmlMsg, setXmlMsg] = useState("");
   const xmlInputRef = useRef<HTMLInputElement>(null);
 
+  function applyParsed(parsed: ReturnType<typeof parseCostaRicaXML>, fileType: string) {
+    if (!parsed) {
+      setXmlMsg(`No se pudo leer el ${fileType}. Verifica que sea una factura electrónica de Hacienda.`);
+      return;
+    }
+    if (parsed.invoiceNumber) setInvoiceNumber(parsed.invoiceNumber);
+    if (parsed.supplier)      setSupplier(parsed.supplier);
+    if (parsed.amount > 0)    setAmount(parsed.amount.toString());
+    if (parsed.date)          setSubmissionDate(parsed.date);
+    if (parsed.description)   setDescription(parsed.description);
+    handleTypeChange(parsed.detectedType);
+    setXmlMsg(`✓ ${fileType} leído: ${parsed.supplier || "sin nombre"} — ₡${parsed.amount.toLocaleString("es-CR")}`);
+  }
+
   function handleXmlUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const text = ev.target?.result as string;
-      const parsed = parseCostaRicaXML(text);
-      if (!parsed) {
-        setXmlMsg("No se pudo leer el XML. Verifica que sea una factura electrónica de Hacienda.");
-        return;
-      }
-      if (parsed.invoiceNumber) setInvoiceNumber(parsed.invoiceNumber);
-      if (parsed.supplier)      setSupplier(parsed.supplier);
-      if (parsed.amount > 0)    setAmount(parsed.amount.toString());
-      if (parsed.date)          setSubmissionDate(parsed.date);
-      if (parsed.description)   setDescription(parsed.description);
-      handleTypeChange(parsed.detectedType);
-      setXmlMsg(`✓ XML leído: ${parsed.supplier || "sin nombre"} — ₡${parsed.amount.toLocaleString("es-CR")}`);
-    };
-    reader.readAsText(file, "UTF-8");
+    if (file.name.toLowerCase().endsWith(".pdf")) {
+      setXmlMsg("Leyendo PDF...");
+      parsePDF(file).then((parsed) => applyParsed(parsed, "PDF"));
+    } else {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target?.result as string;
+        applyParsed(parseCostaRicaXML(text), "XML");
+      };
+      reader.readAsText(file, "UTF-8");
+    }
     if (xmlInputRef.current) xmlInputRef.current.value = "";
   }
 
@@ -132,9 +141,9 @@ export default function TramiteForm({ projects, defaultProjectId, tramite }: Pro
       <div className="card p-4 border-dashed border-2 border-brand-200 bg-brand-50">
         <div className="flex items-center gap-4">
           <div className="flex-1">
-            <p className="text-sm font-medium text-brand-700">Cargar factura electrónica (XML)</p>
+            <p className="text-sm font-medium text-brand-700">Cargar factura electrónica</p>
             <p className="text-xs text-brand-500 mt-0.5">
-              Sube el XML de Hacienda y los campos se rellenan automáticamente
+              Sube el <strong>XML</strong> o el <strong>PDF</strong> de Hacienda — los campos se rellenan automáticamente
             </p>
           </div>
           <label className="btn-primary cursor-pointer shrink-0">
@@ -145,7 +154,7 @@ export default function TramiteForm({ projects, defaultProjectId, tramite }: Pro
             <input
               ref={xmlInputRef}
               type="file"
-              accept=".xml,application/xml,text/xml"
+              accept=".xml,.pdf,application/xml,text/xml,application/pdf"
               onChange={handleXmlUpload}
               className="hidden"
             />
