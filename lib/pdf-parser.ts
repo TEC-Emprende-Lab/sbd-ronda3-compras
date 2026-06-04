@@ -32,7 +32,7 @@ export async function parsePDF(file: File): Promise<ParsedInvoice | null> {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
       const pageText = content.items
-        .map((item: { str?: string }) => item.str ?? "")
+        .map((item) => ("str" in item ? (item as { str: string }).str : ""))
         .join(" ");
       fullText += pageText + "\n";
     }
