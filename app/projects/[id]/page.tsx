@@ -16,7 +16,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
   if (!project) notFound();
 
   const { data: tramites } = await supabase.from("tramites").select("*")
-    .eq("project_id", project.id).order("created_at", { ascending: false });
+    .eq("project_id", project.id).is("deleted_at", null).order("created_at", { ascending: false });
 
   const all              = tramites || [];
   const gastadoAprobado  = all.filter((t) => t.status === "aprobado").reduce((s, t) => s + t.amount, 0);

@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS tramites (
   approval_date DATE,
   notes TEXT,
   checklist JSONB NOT NULL DEFAULT '{}',
+  fundatec_number TEXT,
+  deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

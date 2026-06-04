@@ -29,6 +29,7 @@ export interface Tramite {
   notes: string | null;
   checklist: Record<string, boolean>;
   fundatec_number: string | null;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
 }

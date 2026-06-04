@@ -12,6 +12,7 @@ export default async function ReportePage() {
     .from("tramites")
     .select("*, project:projects(id, name)")
     .neq("status", "rechazado")
+    .is("deleted_at", null)
     .order("updated_at", { ascending: false });
 
   // Fecha de actividad: approval_date si está aprobado, si no la fecha de

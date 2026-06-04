@@ -19,7 +19,7 @@ export default async function ReporteMensualPage() {
     .from("projects").select("*").order("category").order("name");
 
   const { data: tramites } = await supabase
-    .from("tramites").select("*").order("created_at", { ascending: true });
+    .from("tramites").select("*").is("deleted_at", null).order("created_at", { ascending: true });
 
   const all = tramites || [];
   const byProject: Record<number, Tramite[]> = {};

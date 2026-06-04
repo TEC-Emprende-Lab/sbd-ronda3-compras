@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
   const { data: projects } = await supabase.from("projects").select("*").order("category").order("name");
-  const { data: tramites } = await supabase.from("tramites").select("*");
+  const { data: tramites } = await supabase.from("tramites").select("*").is("deleted_at", null);
 
   const tramitesByProject: Record<number, Tramite[]> = {};
   (tramites || []).forEach((t) => {

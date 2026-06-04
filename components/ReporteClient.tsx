@@ -50,7 +50,8 @@ export default function ReporteClient({ byDate, dates }: Props) {
   async function handleDelete(id: string) {
     setDeletingId(id);
     const supabase = createClient();
-    await supabase.from("tramites").delete().eq("id", id);
+    // Soft delete → va a la papelera, se puede restaurar
+    await supabase.from("tramites").update({ deleted_at: new Date().toISOString() }).eq("id", id);
     setDeletingId(null);
     setConfirmId(null);
     router.refresh();

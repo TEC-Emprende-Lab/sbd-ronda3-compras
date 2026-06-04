@@ -16,19 +16,23 @@ export default function DeleteButton({
 
   async function handleDelete() {
     const supabase = createClient();
-    await supabase.from("tramites").delete().eq("id", tramiteId);
+    // Soft delete: marca como eliminado sin borrar de la base de datos
+    await supabase
+      .from("tramites")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", tramiteId);
     router.push(`/projects/${projectId}`);
     router.refresh();
   }
 
   if (confirming) {
     return (
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-600">¿Eliminar?</span>
-        <button onClick={handleDelete} className="btn-danger text-xs px-3 py-1.5">
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 13, color: "var(--gray)" }}>¿Enviar a papelera?</span>
+        <button onClick={handleDelete} className="btn btn-sm" style={{ background: "var(--orange-d)", color: "#fff" }}>
           Sí, eliminar
         </button>
-        <button onClick={() => setConfirming(false)} className="btn-secondary text-xs px-3 py-1.5">
+        <button onClick={() => setConfirming(false)} className="btn btn-ghost btn-sm">
           Cancelar
         </button>
       </div>
@@ -36,7 +40,8 @@ export default function DeleteButton({
   }
 
   return (
-    <button onClick={() => setConfirming(true)} className="btn-secondary text-xs text-red-600 border-red-200 hover:bg-red-50">
+    <button onClick={() => setConfirming(true)} className="btn btn-ghost btn-sm"
+      style={{ color: "var(--orange-d)", borderColor: "var(--orange-l)" }}>
       Eliminar
     </button>
   );
