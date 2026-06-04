@@ -72,7 +72,7 @@ export default function StatusUpdater({
           value={fundatecNumber}
           onChange={(e) => setFundatecNumber(e.target.value)}
           placeholder="N° FUNDATEC (opcional)"
-          className="text-xs border border-gray-300 rounded px-2 py-1 w-40 focus:outline-none focus:border-brand-500"
+          className="finput text-xs w-40"
           autoFocus
           onKeyDown={(e) => { if (e.key === "Enter") handleApprove(); if (e.key === "Escape") setAskingFundatec(false); }}
         />
@@ -95,7 +95,7 @@ export default function StatusUpdater({
 
   return (
     <div className="flex items-center gap-1">
-      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}>
+      <span className={STATUS_COLORS[status]} style={{ fontSize: 10 }}>
         {STATUS_LABELS[status]}
       </span>
       {nextStatus && (

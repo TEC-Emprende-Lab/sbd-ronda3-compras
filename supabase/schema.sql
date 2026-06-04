@@ -6,11 +6,11 @@ CREATE TABLE IF NOT EXISTS projects (
   budget DECIMAL(12,2) NOT NULL
 );
 
--- Trámites: órdenes de compra, facturas, reintegros
+-- Trámites: compras por OC (factura), reintegros, uso de TC
 CREATE TABLE IF NOT EXISTS tramites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id INT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK (type IN ('orden_compra', 'factura', 'reintegro')),
+  type TEXT NOT NULL CHECK (type IN ('factura', 'reintegro', 'uso_tc')),
   status TEXT NOT NULL DEFAULT 'en_proceso_firmas'
     CHECK (status IN ('en_proceso_firmas', 'en_sistema_fundatec', 'aprobado', 'rechazado')),
   invoice_number TEXT,

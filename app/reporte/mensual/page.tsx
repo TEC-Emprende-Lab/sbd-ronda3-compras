@@ -1,5 +1,4 @@
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import { formatCRC, TRAMITE_TYPE_LABELS } from "@/lib/types";
 import type { Tramite, Project } from "@/lib/types";
 import ReporteMensualClient from "@/components/ReporteMensualClient";
 

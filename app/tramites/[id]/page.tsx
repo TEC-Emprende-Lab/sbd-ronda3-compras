@@ -30,11 +30,12 @@ export default async function EditTramitePage({ params }: { params: Promise<{ id
         <div>
           <Link
             href={`/projects/${tramite.project_id}`}
-            className="text-sm text-brand-600 hover:underline"
+            className="text-sm hover:underline"
+            style={{ color: "var(--orange)" }}
           >
             ← {tramite.project?.name}
           </Link>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">Editar trámite</h1>
+          <h1 className="mt-1 text-2xl font-bold" style={{ color: "var(--black)" }}>Editar trámite</h1>
         </div>
         <DeleteButton tramiteId={tramite.id} projectId={tramite.project_id} />
       </div>
