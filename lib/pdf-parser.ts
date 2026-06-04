@@ -14,9 +14,9 @@ export async function parsePDF(file: File): Promise<ParsedInvoice | null> {
   try {
     const pdfjsLib = await import("pdfjs-dist");
 
-    // Worker via CDN — evita conflictos con bundler de Next.js
+    // Worker via unpkg CDN — siempre tiene la versión exacta instalada
     pdfjsLib.GlobalWorkerOptions.workerSrc =
-      `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+      `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
     const arrayBuffer = await file.arrayBuffer();
     const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
@@ -54,11 +54,10 @@ function parseInvoiceText(text: string): ParsedInvoice | null {
   // ── Número de factura ────────────────────────────────────────
   const invoicePatterns = isEnglish
     ? [
-        /Invoice\s*#\s*:?\s*([A-Z0-9\-\_]{4,30})/i,
-        /Invoice\s*Number\s*:?\s*([A-Z0-9\-\_]{4,30})/i,
-        /Receipt\s*#\s*:?\s*([A-Z0-9\-\_]{4,30})/i,
-        /Order\s*#\s*:?\s*([A-Z0-9\-\_]{4,30})/i,
-        /\b([A-Z]{2,}[0-9A-Z\-]{4,})\b/,
+        /Invoice\s*(?:number|#)\s*:?\s*([A-Z0-9\-\_]{4,30})/i,
+        /Receipt\s*(?:number|#)\s*:?\s*([A-Z0-9\-\_]{4,30})/i,
+        /Order\s*(?:number|#)\s*:?\s*([A-Z0-9\-\_]{4,30})/i,
+        /\b([A-Z0-9]{2,}-[A-Z0-9]{4,})\b/,  // formato XXXX-0001
       ]
     : [
         /[Nn][úu]mero\s+[Cc]onsecutivo[:\s]+([0-9]{20})/,
@@ -77,9 +76,19 @@ function parseInvoiceText(text: string): ParsedInvoice | null {
   // ── Proveedor / Emisor ───────────────────────────────────────
   const supplierPatterns = isEnglish
     ? [
-        /From[:\s]+([A-Z][^\n,;]{3,60})/i,
-        /^(Anthropic|OpenAI|Amazon|Google|Microsoft|AWS|GitHub|Notion|Slack|Zoom|Adobe|Figma|Canva|Cloudflare|Vercel|Stripe|PayPal)/im,
-        /([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3})\s+Invoice/i,
+        // Empresas conocidas — búsqueda directa en el texto
+        /(Anthropic(?:,?\s*PBC)?)/i,
+        /(OpenAI(?:,?\s*LLC)?)/i,
+        /(Amazon\s+Web\s+Services|AWS)/i,
+        /(Google\s+LLC|Google\s+Cloud)/i,
+        /(Microsoft\s+Corporation|Microsoft)/i,
+        /(GitHub,?\s*Inc\.?)/i,
+        /(Vercel,?\s*Inc\.?)/i,
+        /(Cloudflare,?\s*Inc\.?)/i,
+        /(Stripe,?\s*Inc\.?)/i,
+        // Genérico: primera empresa listada antes de una dirección
+        /^([A-Z][A-Za-z\s,\.]{3,40})\s+\d+\s+[A-Z][a-z]+\s+(?:Street|Ave|Blvd|Road)/im,
+        /From[:\s]+([A-Z][^\n,;]{3,50})/i,
         /Invoice\s+from\s+([^\n,;]{3,50})/i,
       ]
     : [
@@ -98,11 +107,13 @@ function parseInvoiceText(text: string): ParsedInvoice | null {
   // ── Monto ────────────────────────────────────────────────────
   const amountPatterns = isEnglish
     ? [
+        /Amount\s+paid[:\s]+\$?([\d,\.]+)/i,
         /Amount\s+Due[:\s]+\$?([\d,\.]+)/i,
         /Total\s+Due[:\s]+\$?([\d,\.]+)/i,
         /Total\s+Amount[:\s]+\$?([\d,\.]+)/i,
         /Total[:\s]+\$?([\d,\.]+)/i,
-        /\$\s*([\d,\.]+)/,
+        /\$\s*([\d]+\.[\d]{2})\s+paid/i,
+        /\$\s*([\d]+\.[\d]{2})/,
       ]
     : [
         /[Tt]otal\s+[Cc]omprobante[:\s₡]+([\d,\.]+)/,
@@ -128,7 +139,9 @@ function parseInvoiceText(text: string): ParsedInvoice | null {
   };
   const datePatterns = isEnglish
     ? [
+        /Date\s+paid\s+([A-Z][a-z]+\s+\d{1,2},?\s+\d{4})/i,
         /(?:Invoice\s+)?Date[:\s]+([A-Z][a-z]+\s+\d{1,2},?\s+\d{4})/i,
+        /paid\s+on\s+([A-Z][a-z]+\s+\d{1,2},?\s+\d{4})/i,
         /Date[:\s]+(\d{4}-\d{2}-\d{2})/i,
         /Date[:\s]+(\d{2}\/\d{2}\/\d{4})/i,
         /(\d{4}-\d{2}-\d{2})/,
@@ -179,7 +192,8 @@ function parseInvoiceText(text: string): ParsedInvoice | null {
 
   // ── Tipo ─────────────────────────────────────────────────────
   const isTiquete = /[Tt]iquete/i.test(clean);
-  const isReceipt = /receipt/i.test(clean) && !isEnglish;
+  // Receipts internacionales son reintegros (se pagaron con tarjeta personal)
+  const isReceipt = /receipt|amount paid/i.test(clean);
   const detectedType: ParsedInvoice["detectedType"] =
     isTiquete || isReceipt ? "reintegro" : "factura";
 
