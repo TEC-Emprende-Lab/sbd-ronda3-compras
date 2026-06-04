@@ -18,6 +18,12 @@ interface Props {
 
 const STATUSES: TramiteStatus[] = ["en_proceso_firmas", "en_sistema_fundatec", "aprobado", "rechazado"];
 
+const APPROVAL_NOTES: Record<TramiteType, string> = {
+  reintegro: "Reintegro aprobado por el gestor técnico, comprobable en minuta adjunta.\nMontos y detalles correctos.",
+  factura:   "Compra aprobada por el gestor técnico, comprobable en minuta adjunta.\nMontos y detalles correctos.",
+  uso_tc:    "Compra aprobada por el gestor técnico, comprobable en minuta adjunta.\nMontos y detalles correctos.",
+};
+
 export default function TramiteForm({ projects, defaultProjectId, tramite }: Props) {
   const router = useRouter();
   const isEditing = !!tramite;
@@ -32,6 +38,7 @@ export default function TramiteForm({ projects, defaultProjectId, tramite }: Pro
   const [submissionDate, setSubmissionDate] = useState(tramite?.submission_date ?? "");
   const [approvalDate,   setApprovalDate]   = useState(tramite?.approval_date ?? "");
   const [notes,          setNotes]          = useState(tramite?.notes ?? "");
+  const [fundatecNumber, setFundatecNumber] = useState((tramite as Tramite & { fundatec_number?: string })?.fundatec_number ?? "");
   const [checklist,      setChecklist]      = useState<Record<string, boolean>>(tramite?.checklist ?? {});
   const [saving,         setSaving]         = useState(false);
   const [error,          setError]          = useState("");
@@ -94,16 +101,17 @@ export default function TramiteForm({ projects, defaultProjectId, tramite }: Pro
     setError("");
     const supabase = createClient();
     const payload = {
-      project_id:      projectId,
-      type,            status,
-      invoice_number:  invoiceNumber || null,
-      supplier:        supplier || null,
-      amount:          parseFloat(amount) || 0,
-      description:     description || null,
-      submission_date: submissionDate || null,
-      approval_date:   approvalDate || null,
-      notes:           notes || null,
-      checklist:       displayChecklist,
+      project_id:       projectId,
+      type,             status,
+      invoice_number:   invoiceNumber || null,
+      supplier:         supplier || null,
+      amount:           parseFloat(amount) || 0,
+      description:      description || null,
+      submission_date:  submissionDate || null,
+      approval_date:    approvalDate || null,
+      notes:            notes || null,
+      fundatec_number:  fundatecNumber || null,
+      checklist:        displayChecklist,
     };
     let err;
     if (isEditing) {
@@ -253,12 +261,35 @@ export default function TramiteForm({ projects, defaultProjectId, tramite }: Pro
           </div>
         </div>
 
-        {/* Notas */}
+        {/* N° Consecutivo FUNDATEC */}
         <div>
-          <label className="caps" style={{ display: "block", marginBottom: 6 }}>Notas internas</label>
-          <textarea className="finput" rows={2} value={notes}
+          <label className="caps" style={{ display: "block", marginBottom: 6 }}>N° Consecutivo FUNDATEC</label>
+          <input className="finput" type="text" value={fundatecNumber}
+            onChange={(e) => setFundatecNumber(e.target.value)}
+            placeholder="ej. 2025-001 (asignado por sistema FUNDATEC)" />
+        </div>
+
+        {/* Notas de aprobación */}
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+            <label className="caps">Nota de aprobación</label>
+            <button type="button"
+              onClick={() => setNotes(APPROVAL_NOTES[type])}
+              style={{
+                fontSize: 11, fontWeight: 600, color: "var(--orange)",
+                background: "none", border: "none", cursor: "pointer",
+                padding: "2px 8px", borderRadius: "var(--radius-sm)",
+                fontFamily: "var(--font-body)",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#FEE5D8")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+            >
+              ↩ Insertar texto estándar
+            </button>
+          </div>
+          <textarea className="finput" rows={3} value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Observaciones, pendientes, referencias..." />
+            placeholder={APPROVAL_NOTES[type]} />
         </div>
       </div>
 
