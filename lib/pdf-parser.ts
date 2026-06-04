@@ -47,15 +47,26 @@ export async function parsePDF(file: File): Promise<ParsedInvoice | null> {
 function parseInvoiceText(text: string): ParsedInvoice | null {
   const clean = text.replace(/\s+/g, " ").trim();
 
+  // Detectar idioma del documento
+  const isEnglish = /Invoice\s*#|Invoice\s*Number|Amount\s*Due|Bill\s*To|Receipt/i.test(clean);
+
   // ── Número de factura ────────────────────────────────────────
-  // Primero buscar Número Consecutivo (20 dígitos), luego Clave (50 dígitos)
-  const invoicePatterns = [
-    /[Nn][úu]mero\s+[Cc]onsecutivo[:\s]+([0-9]{20})/,
-    /[Cc]onsecutivo[:\s]+([0-9]{20})/,
-    /\b([0-9]{20})\b/,
-    /[Cc]lave[:\s]+([0-9]{50})/,
-    /\b([A-Z]{2,}[0-9A-Z\-]{4,})\b/,  // ej. VJBKOVPH-0002
-  ];
+  const invoicePatterns = isEnglish
+    ? [
+        /Invoice\s*#\s*:?\s*([A-Z0-9\-\_]{4,30})/i,
+        /Invoice\s*Number\s*:?\s*([A-Z0-9\-\_]{4,30})/i,
+        /Receipt\s*#\s*:?\s*([A-Z0-9\-\_]{4,30})/i,
+        /Order\s*#\s*:?\s*([A-Z0-9\-\_]{4,30})/i,
+        /\b([A-Z]{2,}[0-9A-Z\-]{4,})\b/,
+      ]
+    : [
+        /[Nn][úu]mero\s+[Cc]onsecutivo[:\s]+([0-9]{20})/,
+        /[Cc]onsecutivo[:\s]+([0-9]{20})/,
+        /\b([0-9]{20})\b/,
+        /[Cc]lave[:\s]+([0-9]{50})/,
+        /\b([A-Z]{2,}[0-9A-Z\-]{4,})\b/,
+      ];
+
   let invoiceNumber = "";
   for (const pattern of invoicePatterns) {
     const m = clean.match(pattern);
@@ -63,12 +74,20 @@ function parseInvoiceText(text: string): ParsedInvoice | null {
   }
 
   // ── Proveedor / Emisor ───────────────────────────────────────
-  const supplierPatterns = [
-    /[Ee]misor[:\s]+([A-ZÁÉÍÓÚÑ][^\n,;]{3,60})/,
-    /[Nn]ombre\s+del?\s+[Ee]misor[:\s]+([^\n,;]{3,60})/,
-    /[Rr]az[oó]n\s+[Ss]ocial[:\s]+([^\n,;]{3,60})/,
-    /^([A-ZÁÉÍÓÚÑ][A-Za-záéíóúñ\s\.,S\.A\.LTDA]{5,50})\s*(?:Cédula|RUC|N°)/m,
-  ];
+  const supplierPatterns = isEnglish
+    ? [
+        /From[:\s]+([A-Z][^\n,;]{3,60})/i,
+        /^(Anthropic|OpenAI|Amazon|Google|Microsoft|AWS|GitHub|Notion|Slack|Zoom|Adobe|Figma|Canva|Cloudflare|Vercel|Stripe|PayPal)/im,
+        /([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3})\s+Invoice/i,
+        /Invoice\s+from\s+([^\n,;]{3,50})/i,
+      ]
+    : [
+        /[Ee]misor[:\s]+([A-ZÁÉÍÓÚÑ][^\n,;]{3,60})/,
+        /[Nn]ombre\s+del?\s+[Ee]misor[:\s]+([^\n,;]{3,60})/,
+        /[Rr]az[oó]n\s+[Ss]ocial[:\s]+([^\n,;]{3,60})/,
+        /^([A-ZÁÉÍÓÚÑ][A-Za-záéíóúñ\s\.,]{5,50})\s*(?:Cédula|RUC|N°)/m,
+      ];
+
   let supplier = "";
   for (const pattern of supplierPatterns) {
     const m = clean.match(pattern);
@@ -76,36 +95,60 @@ function parseInvoiceText(text: string): ParsedInvoice | null {
   }
 
   // ── Monto ────────────────────────────────────────────────────
-  const amountPatterns = [
-    /[Tt]otal\s+[Cc]omprobante[:\s₡]+([\d,\.]+)/,
-    /[Tt]otal\s+[Ff]actura[:\s₡]+([\d,\.]+)/,
-    /[Mm]onto\s+[Tt]otal[:\s₡]+([\d,\.]+)/,
-    /[Tt]otal[:\s₡]+([\d]{1,3}(?:[,\.]\d{3})+(?:[,\.]\d{2})?)/,
-  ];
+  const amountPatterns = isEnglish
+    ? [
+        /Amount\s+Due[:\s]+\$?([\d,\.]+)/i,
+        /Total\s+Due[:\s]+\$?([\d,\.]+)/i,
+        /Total\s+Amount[:\s]+\$?([\d,\.]+)/i,
+        /Total[:\s]+\$?([\d,\.]+)/i,
+        /\$\s*([\d,\.]+)/,
+      ]
+    : [
+        /[Tt]otal\s+[Cc]omprobante[:\s₡]+([\d,\.]+)/,
+        /[Tt]otal\s+[Ff]actura[:\s₡]+([\d,\.]+)/,
+        /[Mm]onto\s+[Tt]otal[:\s₡]+([\d,\.]+)/,
+        /[Tt]otal[:\s₡]+([\d]{1,3}(?:[,\.]\d{3})+(?:[,\.]\d{2})?)/,
+      ];
+
   let amount = 0;
   for (const pattern of amountPatterns) {
     const m = clean.match(pattern);
     if (m) {
-      // Normalizar formato costarricense: 1.234.567,89 o 1,234,567.89
-      const raw = m[1].replace(/\./g, "").replace(",", ".");
+      const raw = m[1].replace(/,/g, "");
       amount = parseFloat(raw) || 0;
       if (amount > 0) break;
     }
   }
 
   // ── Fecha ────────────────────────────────────────────────────
-  const datePatterns = [
-    /[Ff]echa\s+(?:de\s+)?[Ee]misi[oó]n[:\s]+(\d{4}-\d{2}-\d{2})/,
-    /[Ff]echa[:\s]+(\d{2}\/\d{2}\/\d{4})/,
-    /(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}/,
-  ];
+  const MONTHS: Record<string, string> = {
+    january:"01",february:"02",march:"03",april:"04",may:"05",june:"06",
+    july:"07",august:"08",september:"09",october:"10",november:"11",december:"12",
+  };
+  const datePatterns = isEnglish
+    ? [
+        /(?:Invoice\s+)?Date[:\s]+([A-Z][a-z]+\s+\d{1,2},?\s+\d{4})/i,
+        /Date[:\s]+(\d{4}-\d{2}-\d{2})/i,
+        /Date[:\s]+(\d{2}\/\d{2}\/\d{4})/i,
+        /(\d{4}-\d{2}-\d{2})/,
+      ]
+    : [
+        /[Ff]echa\s+(?:de\s+)?[Ee]misi[oó]n[:\s]+(\d{4}-\d{2}-\d{2})/,
+        /[Ff]echa[:\s]+(\d{2}\/\d{2}\/\d{4})/,
+        /(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}/,
+      ];
+
   let date = "";
   for (const pattern of datePatterns) {
     const m = clean.match(pattern);
     if (m) {
-      // Normalizar a YYYY-MM-DD
       const raw = m[1];
-      if (raw.includes("/")) {
+      // "March 15, 2026" → "2026-03-15"
+      const wordy = raw.match(/([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})/);
+      if (wordy) {
+        const mo = MONTHS[wordy[1].toLowerCase()] ?? "01";
+        date = `${wordy[3]}-${mo}-${wordy[2].padStart(2,"0")}`;
+      } else if (raw.includes("/")) {
         const [d, mo, y] = raw.split("/");
         date = `${y}-${mo.padStart(2,"0")}-${d.padStart(2,"0")}`;
       } else {
@@ -115,20 +158,29 @@ function parseInvoiceText(text: string): ParsedInvoice | null {
     }
   }
 
-  // ── Descripción (primera línea de detalle) ───────────────────
-  const descPatterns = [
-    /[Dd]etalle[:\s]+([^\n]{5,80})/,
-    /[Dd]escripci[oó]n[:\s]+([^\n]{5,80})/,
-  ];
+  // ── Descripción ──────────────────────────────────────────────
+  const descPatterns = isEnglish
+    ? [
+        /Description[:\s]+([^\n]{5,80})/i,
+        /Plan[:\s]+([^\n]{5,60})/i,
+        /Service[:\s]+([^\n]{5,60})/i,
+      ]
+    : [
+        /[Dd]etalle[:\s]+([^\n]{5,80})/,
+        /[Dd]escripci[oó]n[:\s]+([^\n]{5,80})/,
+      ];
+
   let description = "";
   for (const pattern of descPatterns) {
     const m = clean.match(pattern);
     if (m) { description = m[1].trim(); break; }
   }
 
-  // ── Tipo: tiquete vs factura ─────────────────────────────────
+  // ── Tipo ─────────────────────────────────────────────────────
   const isTiquete = /[Tt]iquete/i.test(clean);
-  const detectedType: ParsedInvoice["detectedType"] = isTiquete ? "reintegro" : "factura";
+  const isReceipt = /receipt/i.test(clean) && !isEnglish;
+  const detectedType: ParsedInvoice["detectedType"] =
+    isTiquete || isReceipt ? "reintegro" : "factura";
 
   if (!invoiceNumber && amount === 0) return null;
 
