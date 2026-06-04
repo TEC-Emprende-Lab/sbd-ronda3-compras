@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase";
 import {
   TRAMITE_TYPE_LABELS, STATUS_LABELS, formatCRC,
   type TramiteType, type TramiteStatus,
@@ -39,8 +41,20 @@ const TYPE_BADGE: Record<string, string> = {
 };
 
 export default function ReporteClient({ byDate, dates }: Props) {
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(dates[0] ?? "");
   const [copied, setCopied] = useState(false);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function handleDelete(id: string) {
+    setDeletingId(id);
+    const supabase = createClient();
+    await supabase.from("tramites").delete().eq("id", id);
+    setDeletingId(null);
+    setConfirmId(null);
+    router.refresh();
+  }
 
   const tramites = byDate[selectedDate] ?? [];
   const aprobados  = tramites.filter((t) => t.status === "aprobado");
@@ -115,6 +129,44 @@ export default function ReporteClient({ byDate, dates }: Props) {
                 ? <span style={{ fontSize: 11, fontWeight: 700, color: "var(--orange)" }}>{t.fundatec_number}</span>
                 : <span style={{ fontSize: 11, color: "var(--orange-d)", fontStyle: "italic" }}>Falta N°</span>)
             : <span style={{ fontSize: 11, color: "var(--gray)" }}>—</span>}
+        </td>
+        <td style={{ whiteSpace: "nowrap", textAlign: "right" }}>
+          {confirmId === t.id ? (
+            <span style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+              <button
+                onClick={() => handleDelete(t.id)}
+                disabled={deletingId === t.id}
+                style={{
+                  fontSize: 11, fontWeight: 600, color: "#fff", background: "var(--orange-d)",
+                  border: "none", borderRadius: "var(--radius-sm)", padding: "3px 8px", cursor: "pointer",
+                  fontFamily: "var(--font-body)",
+                }}>
+                {deletingId === t.id ? "..." : "Sí, borrar"}
+              </button>
+              <button
+                onClick={() => setConfirmId(null)}
+                style={{
+                  fontSize: 11, fontWeight: 500, color: "var(--gray)", background: "none",
+                  border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", padding: "3px 8px",
+                  cursor: "pointer", fontFamily: "var(--font-body)",
+                }}>
+                No
+              </button>
+            </span>
+          ) : (
+            <button
+              onClick={() => setConfirmId(t.id)}
+              title="Borrar registro"
+              aria-label="Borrar registro"
+              style={{
+                color: "var(--gray)", background: "none", border: "none", cursor: "pointer",
+                padding: 4, borderRadius: "var(--radius-sm)", display: "inline-flex",
+              }}>
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+              </svg>
+            </button>
+          )}
         </td>
       </tr>
     );
@@ -200,7 +252,7 @@ export default function ReporteClient({ byDate, dates }: Props) {
             <table className="ttable">
               <thead>
                 <tr>
-                  {["Proyecto", "Tipo", "N° Factura", "Monto", "Estado", "N° FUNDATEC"].map((h) => <th key={h}>{h}</th>)}
+                  {["Proyecto", "Tipo", "N° Factura", "Monto", "Estado", "N° FUNDATEC", ""].map((h, i) => <th key={h || `act-${i}`}>{h}</th>)}
                 </tr>
               </thead>
               <tbody>
@@ -223,7 +275,7 @@ export default function ReporteClient({ byDate, dates }: Props) {
             <table className="ttable">
               <thead>
                 <tr>
-                  {["Proyecto", "Tipo", "N° Factura", "Monto", "Estado", "N° FUNDATEC"].map((h) => <th key={h}>{h}</th>)}
+                  {["Proyecto", "Tipo", "N° Factura", "Monto", "Estado", "N° FUNDATEC", ""].map((h, i) => <th key={h || `act-${i}`}>{h}</th>)}
                 </tr>
               </thead>
               <tbody>
