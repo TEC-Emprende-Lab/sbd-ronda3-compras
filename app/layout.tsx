@@ -53,7 +53,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/reporte"
                   style={{ color: "var(--sidebar-muted)", fontSize: 13, fontWeight: 500, padding: "8px 12px", borderRadius: "var(--radius-md)", transition: "all .15s" }}
                   className="hover:text-cream hover:bg-white/10">
-                  Reporte
+                  Sesión
+                </Link>
+                <Link href="/reporte/mensual"
+                  style={{ color: "var(--sidebar-muted)", fontSize: 13, fontWeight: 500, padding: "8px 12px", borderRadius: "var(--radius-md)", transition: "all .15s" }}
+                  className="hover:text-cream hover:bg-white/10">
+                  Mensual
                 </Link>
                 <div className="mx-2 h-4 w-px" style={{ background: "var(--sidebar-border)" }} />
                 <Link href="/tramites/nuevo" className="btn btn-orange">
