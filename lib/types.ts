@@ -30,6 +30,7 @@ export interface Tramite {
   checklist: Record<string, boolean>;
   fundatec_number: string | null;
   deleted_at: string | null;
+  historical: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS tramites (
   checklist JSONB NOT NULL DEFAULT '{}',
   fundatec_number TEXT,
   deleted_at TIMESTAMPTZ,
+  historical BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

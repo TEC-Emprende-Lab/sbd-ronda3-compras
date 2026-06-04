@@ -13,6 +13,7 @@ export default async function ReportePage() {
     .select("*, project:projects(id, name)")
     .neq("status", "rechazado")
     .is("deleted_at", null)
+    .eq("historical", false)
     .order("updated_at", { ascending: false });
 
   // Fecha de actividad: approval_date si está aprobado, si no la fecha de
