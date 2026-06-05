@@ -169,6 +169,16 @@ UPDATE tramites SET invoice_number='00200001010000002614', supplier='María Elen
 -- Resultado esperado P48: ₡3,921,306.50 ≈ FUNDATEC ₡3,921,306.17
 
 -- ============================================================
+-- 10. ACTUALIZACIÓN P67 (extracto FUNDATEC 05-06-2026)
+--     Warner 000002 (₡663,000) pasó de presupuestado a EJECUTADO.
+-- ============================================================
+UPDATE tramites SET status='aprobado', approval_date='2026-06-05', supplier='Warner Ernesto Torres Brenes'
+WHERE project_id=67 AND invoice_number='00100001010000000002';
+-- Resultado P67: aprobado ₡4,578,385.03 · en proceso ₡451,853.53
+-- (Almacema 034511, ExtremeTech 026925, Vital Uniformes 001747 siguen pendientes)
+
+
+-- ============================================================
 -- ESTADO FINAL: los 15 proyectos cuadran contra FUNDATEC.
 -- Diferencias residuales = compras reales aún no ejecutadas por
 -- FUNDATEC (P44 ₡20,400 · P50 ₡40,622 · P67 ₡173,310) + redondeo
