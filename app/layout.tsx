@@ -85,7 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <footer className="mt-16 py-6" style={{ borderTop: "1px solid var(--border)" }}>
           <p className="text-center text-xs" style={{ color: "var(--gray)" }}>
-            TEC Emprende Lab · Control de Compras SBD Ronda 3 · FUNDATEC
+            TEC Emprende Lab · Control de Compras SBD Ronda 3
           </p>
         </footer>
       </body>

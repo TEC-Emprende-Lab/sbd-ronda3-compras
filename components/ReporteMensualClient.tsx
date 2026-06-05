@@ -171,7 +171,7 @@ export default function ReporteMensualClient({ projectReports, months }: Props) 
         doc.setFontSize(6.5);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(179, 168, 146);
-        doc.text("TEC Emprende Lab · Control de Compras SBD Ronda 3 · FUNDATEC", 10, doc.internal.pageSize.getHeight() - 3);
+        doc.text("TEC Emprende Lab · Control de Compras SBD Ronda 3", 10, doc.internal.pageSize.getHeight() - 3);
         doc.text(`Página ${i} de ${pageCount}`, W - 10, doc.internal.pageSize.getHeight() - 3, { align: "right" });
       }
 
