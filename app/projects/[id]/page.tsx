@@ -75,7 +75,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
             style={{ width: `${Math.min(100, usedPct)}%` }} />
         </div>
         <p className="text-xs mt-2" style={{ color: "var(--gray)" }}>
-          Todos los trámites aprobados descuentan del presupuesto. Los rechazados no afectan el disponible.
+          Disponible según los trámites registrados (los rechazados no descuentan). Puede diferir del saldo
+          oficial de FUNDATEC, que además contempla comisiones, traslados y saldos de períodos anteriores.
         </p>
       </div>
 

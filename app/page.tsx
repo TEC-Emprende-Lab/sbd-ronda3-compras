@@ -79,6 +79,10 @@ export default async function DashboardPage() {
           <div className={`pbar ${pctUsed > 100 ? "pbar-red" : "pbar-orange"}`}
             style={{ width: `${Math.min(100, pctUsed)}%` }} />
         </div>
+        <p className="text-xs mt-2" style={{ color: "var(--gray)" }}>
+          Montos calculados según los trámites registrados en esta plataforma. Pueden variar ligeramente
+          del saldo oficial de FUNDATEC, que incluye comisiones bancarias, traslados y saldos de períodos anteriores.
+        </p>
       </div>
 
       {/* Prototipado */}
