@@ -179,6 +179,25 @@ WHERE project_id=67 AND invoice_number='00100001010000000002';
 
 
 -- ============================================================
+-- 11. CORRECCIÓN P44 — AMDE 021539 (faltaba transporte Correos)
+--     Plataforma tenía ₡99,201.83; FUNDATEC ₡106,341.86
+--     (99,201.86 mercadería + 7,140.00 transporte Correos CR).
+-- ============================================================
+UPDATE tramites SET amount=106341.86
+WHERE project_id=44 AND invoice_number='00303586010000021539';
+-- Tras esto, las FACTURAS de P44 suman exacto ₡1,904,928.54 = FUNDATEC.
+-- NOTA: el "Disponible de Efectivo" de FUNDATEC NO iguala al disponible
+-- de la plataforma porque FUNDATEC incluye movimientos contables que NO
+-- son facturas y la plataforma (por diseño) no rastrea:
+--   + Saldo de períodos anteriores  (+3,484.34)
+--   - Comisiones bancarias          (-2,474.61)
+--   - Traslado de excedentes        (-1,509.73)
+--   = neto -500.00 sobre el disponible de FUNDATEC
+-- Además la plataforma cuenta el reintegro Pricesmart ₡20,400 que FUNDATEC
+-- aún no ejecuta. Estas diferencias son esperadas, no errores.
+
+
+-- ============================================================
 -- ESTADO FINAL: los 15 proyectos cuadran contra FUNDATEC.
 -- Diferencias residuales = compras reales aún no ejecutadas por
 -- FUNDATEC (P44 ₡20,400 · P50 ₡40,622 · P67 ₡173,310) + redondeo
