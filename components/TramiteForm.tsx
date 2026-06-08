@@ -189,11 +189,11 @@ export default function TramiteForm({ projects, defaultProjectId, tramite }: Pro
         {/* Tipo */}
         <div>
           <label className="caps" style={{ display: "block", marginBottom: 6 }}>Tipo de trámite *</label>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {(Object.entries(TRAMITE_TYPE_LABELS) as [TramiteType, string][]).map(([key, label]) => (
               <button key={key} type="button" onClick={() => handleTypeChange(key)}
                 style={{
-                  flex: 1, padding: "8px 12px", borderRadius: "var(--radius-md)",
+                  flex: "1 1 40%", minWidth: 0, padding: "8px 12px", borderRadius: "var(--radius-md)",
                   border: type === key ? "2px solid var(--orange)" : "1px solid var(--border)",
                   background: type === key ? "#FEE5D8" : "var(--white)",
                   color: type === key ? "var(--orange-d)" : "var(--gray)",
