@@ -198,6 +198,31 @@ WHERE project_id=44 AND invoice_number='00303586010000021539';
 
 
 -- ============================================================
+-- 12. COMISIONES BANCARIAS (rubro 15-02 de cada extracto FUNDATEC)
+--     Una por proyecto con el total acumulado. historical=true:
+--     cuentan para presupuesto, ocultas de los reportes.
+--     Requiere antes: ALTER del CHECK para permitir 'comision_bancaria'.
+-- ============================================================
+INSERT INTO tramites (project_id, type, status, invoice_number, supplier, amount, description, approval_date, submission_date, historical)
+SELECT * FROM (VALUES
+  (42, 'comision_bancaria', 'aprobado', 'COM-BANC-42', 'BNCR', 18158.81::numeric, 'Comisiones bancarias acumuladas (incl. ajuste IVA inicial)', '2026-05-31'::date, '2026-05-31'::date, true),
+  (44, 'comision_bancaria', 'aprobado', 'COM-BANC-44', 'BNCR', 2474.61,  'Comisiones bancarias acumuladas (incl. ajuste IVA inicial)', '2026-05-31', '2026-05-31', true),
+  (46, 'comision_bancaria', 'aprobado', 'COM-BANC-46', 'BNCR', 1500.00,  'Comisión TFT FUNDATEC', '2026-04-30', '2026-04-30', true),
+  (48, 'comision_bancaria', 'aprobado', 'COM-BANC-48', 'BNCR', 47852.22, 'Comisiones bancarias acumuladas (incl. ajuste IVA inicial)', '2026-01-30', '2026-01-30', true),
+  (49, 'comision_bancaria', 'aprobado', 'COM-BANC-49', 'BNCR', 31875.80, 'Comisiones bancarias acumuladas (incl. ajuste IVA inicial)', '2026-01-30', '2026-01-30', true),
+  (50, 'comision_bancaria', 'aprobado', 'COM-BANC-50', 'BNCR', 2744.15,  'Comisiones bancarias acumuladas (incl. ajuste IVA inicial)', '2026-01-30', '2026-01-30', true),
+  (52, 'comision_bancaria', 'aprobado', 'COM-BANC-52', 'BNCR', 88235.28, 'Comisiones bancarias acumuladas (incl. ajuste IVA inicial)', '2026-01-30', '2026-01-30', true),
+  (53, 'comision_bancaria', 'aprobado', 'COM-BANC-53', 'BNCR', 301.10,   'Comisión ajuste IVA inicial', '2026-01-30', '2026-01-30', true),
+  (66, 'comision_bancaria', 'aprobado', 'COM-BANC-66', 'BNCR', 6824.73,  'Comisiones bancarias acumuladas (incl. ajuste IVA inicial)', '2026-05-31', '2026-05-31', true),
+  (67, 'comision_bancaria', 'aprobado', 'COM-BANC-67', 'BNCR', 23784.32, 'Comisiones bancarias acumuladas (incl. ajuste IVA inicial)', '2026-05-31', '2026-05-31', true),
+  (68, 'comision_bancaria', 'aprobado', 'COM-BANC-68', 'BNCR', 66947.73, 'Comisiones bancarias acumuladas (incl. ajuste IVA inicial)', '2026-05-31', '2026-05-31', true),
+  (69, 'comision_bancaria', 'aprobado', 'COM-BANC-69', 'BNCR', 5342.22,  'Comisión ajuste IVA inicial', '2026-01-30', '2026-01-30', true)
+) AS v(project_id, type, status, invoice_number, supplier, amount, description, approval_date, submission_date, historical)
+WHERE NOT EXISTS (SELECT 1 FROM tramites t WHERE t.project_id = v.project_id AND t.type = 'comision_bancaria');
+-- (P45, P47, P54 no tenían comisiones en sus extractos)
+
+
+-- ============================================================
 -- ESTADO FINAL: los 15 proyectos cuadran contra FUNDATEC.
 -- Diferencias residuales = compras reales aún no ejecutadas por
 -- FUNDATEC (P44 ₡20,400 · P50 ₡40,622 · P67 ₡173,310) + redondeo
