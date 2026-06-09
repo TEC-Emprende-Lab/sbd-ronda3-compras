@@ -22,25 +22,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between">
 
-              {/* Logo wordmark — design system spec */}
+              {/* Logo TEC Emprende Lab (positivo sobre contenedor claro) */}
               <Link href="/" className="flex items-center gap-3" aria-label="TEC Emprende Lab — Inicio">
-                <div style={{
-                  width: 36, height: 36,
-                  background: "var(--orange)",
-                  borderRadius: "var(--radius-md)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0,
+                <span style={{
+                  background: "#fff", borderRadius: "var(--radius-md)",
+                  padding: "6px 12px", display: "inline-flex", alignItems: "center", flexShrink: 0,
                 }}>
-                  <span style={{ color: "#fff", fontFamily: "Poppins, sans-serif", fontSize: 16, fontWeight: 700 }}>T</span>
-                </div>
-                <div>
-                  <div style={{ color: "var(--sidebar-text)", fontFamily: "Poppins, sans-serif", fontSize: 14, fontWeight: 600, lineHeight: 1.2 }}>
-                    TEC EMPRENDE<span style={{ color: "var(--orange)" }}> Lab</span>
-                  </div>
-                  <div style={{ color: "var(--sidebar-muted)", fontSize: 11, marginTop: 1 }}>
-                    Control de Compras · SBD R3
-                  </div>
-                </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/logo-tec.svg" alt="TEC Emprende Lab" style={{ height: 24, width: "auto", display: "block" }} />
+                </span>
+                <span style={{
+                  color: "var(--sidebar-muted)", fontSize: 11, paddingLeft: 12,
+                  borderLeft: "1px solid var(--sidebar-border)",
+                }}>
+                  Control de Compras · SBD R3
+                </span>
               </Link>
 
               {/* Nav */}
