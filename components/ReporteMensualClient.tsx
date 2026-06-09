@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatCRC, formatCRCpdf, TRAMITE_TYPE_LABELS, STATUS_LABELS, type TramiteType } from "@/lib/types";
+import { loadLogoDataUrl, LOGO_RATIO } from "@/lib/pdf-utils";
 import type { ProjectReport } from "@/app/reporte/mensual/page";
 
 interface Props {
@@ -46,6 +47,7 @@ export default function ReporteMensualClient({ projectReports, months }: Props) 
     try {
       const { default: jsPDF } = await import("jspdf");
       const { default: autoTable } = await import("jspdf-autotable");
+      const logo = await loadLogoDataUrl();
 
       const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
       const W = doc.internal.pageSize.getWidth();
@@ -56,22 +58,16 @@ export default function ReporteMensualClient({ projectReports, months }: Props) 
       doc.setFillColor(26, 22, 18);
       doc.rect(0, 0, W, 28, "F");
 
-      // Logo cuadro naranja
-      doc.setFillColor(232, 82, 26);
-      doc.roundedRect(10, 7, 14, 14, 2, 2, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.text("T", 17, 17, { align: "center" });
-
-      // Nombre empresa
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text("TEC EMPRENDE Lab", 28, 13);
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(179, 168, 146);
-      doc.text("Control de Compras · SBD Ronda 3", 28, 20);
+      // Logo
+      if (logo) {
+        const h = 12; doc.addImage(logo, "PNG", 10, 8, h * LOGO_RATIO, h);
+      } else {
+        doc.setFillColor(232, 82, 26);
+        doc.roundedRect(10, 7, 14, 14, 2, 2, "F");
+        doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.setFont("helvetica", "bold");
+        doc.text("T", 17, 17, { align: "center" });
+        doc.setFontSize(12); doc.text("TEC EMPRENDE Lab", 28, 14);
+      }
 
       // Título reporte
       doc.setTextColor(255, 255, 255);

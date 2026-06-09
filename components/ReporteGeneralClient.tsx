@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatCRC, formatCRCpdf, type TramiteType } from "@/lib/types";
+import { loadLogoDataUrl, LOGO_RATIO } from "@/lib/pdf-utils";
 import type { ProjectSummary } from "@/app/reporte/general/page";
 
 const CAT_LABEL: Record<string, string> = {
@@ -43,18 +44,21 @@ export default function ReporteGeneralClient({ summaries }: { summaries: Project
     try {
       const { default: jsPDF } = await import("jspdf");
       const { default: autoTable } = await import("jspdf-autotable");
+      const logo = await loadLogoDataUrl();
       const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
       const W = doc.internal.pageSize.getWidth();
       const today = new Date().toLocaleDateString("es-CR", { day: "2-digit", month: "long", year: "numeric" });
 
       // Header
       doc.setFillColor(26, 22, 18); doc.rect(0, 0, W, 26, "F");
-      doc.setFillColor(232, 82, 26); doc.roundedRect(10, 6, 14, 14, 2, 2, "F");
-      doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(10);
-      doc.text("T", 17, 16, { align: "center" });
-      doc.setFontSize(12); doc.text("TEC EMPRENDE Lab", 28, 12);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(179, 168, 146);
-      doc.text("Control de Compras · SBD Ronda 3", 28, 19);
+      if (logo) {
+        const h = 12; doc.addImage(logo, "PNG", 10, 7, h * LOGO_RATIO, h);
+      } else {
+        doc.setFillColor(232, 82, 26); doc.roundedRect(10, 6, 14, 14, 2, 2, "F");
+        doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(10);
+        doc.text("T", 17, 16, { align: "center" });
+        doc.setFontSize(12); doc.text("TEC EMPRENDE Lab", 28, 14);
+      }
       doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(14);
       doc.text("Reporte General de Proyectos", W / 2, 12, { align: "center" });
       doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(179, 168, 146);
