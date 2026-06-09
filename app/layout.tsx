@@ -60,6 +60,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   className="hover:text-cream hover:bg-white/10">
                   Mensual
                 </Link>
+                <Link href="/reporte/general"
+                  style={{ color: "var(--sidebar-muted)", fontSize: 13, fontWeight: 500, padding: "8px 12px", borderRadius: "var(--radius-md)", transition: "all .15s" }}
+                  className="hover:text-cream hover:bg-white/10">
+                  General
+                </Link>
                 <Link href="/papelera" aria-label="Papelera"
                   style={{ color: "var(--sidebar-muted)", fontSize: 13, fontWeight: 500, padding: "8px 10px", borderRadius: "var(--radius-md)", transition: "all .15s", display: "inline-flex", alignItems: "center" }}
                   className="hover:text-cream hover:bg-white/10">
