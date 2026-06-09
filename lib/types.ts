@@ -106,3 +106,12 @@ export function formatCRC(amount: number): string {
     minimumFractionDigits: 2,
   }).format(amount);
 }
+
+// Para PDF: las fuentes estándar de jsPDF no tienen el glifo ₡ (sale como "!"),
+// así que usamos el signo de centavo ¢ (sí soportado en WinAnsi) como símbolo de colón.
+export function formatCRCpdf(amount: number): string {
+  return "¢" + amount.toLocaleString("es-CR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}

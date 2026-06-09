@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatCRC, TRAMITE_TYPE_LABELS, STATUS_LABELS, type TramiteType } from "@/lib/types";
+import { formatCRC, formatCRCpdf, TRAMITE_TYPE_LABELS, STATUS_LABELS, type TramiteType } from "@/lib/types";
 import type { ProjectReport } from "@/app/reporte/mensual/page";
 
 interface Props {
@@ -90,7 +90,7 @@ export default function ReporteMensualClient({ projectReports, months }: Props) 
       doc.text(`${totalTramites} trámites`, W - 12, 13, { align: "right" });
       doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
-      doc.text(formatCRC(totalMonto), W - 12, 21, { align: "right" });
+      doc.text(formatCRCpdf(totalMonto), W - 12, 21, { align: "right" });
 
       let y = 36;
 
@@ -117,7 +117,7 @@ export default function ReporteMensualClient({ projectReports, months }: Props) 
         doc.setFont("helvetica", "normal");
         doc.setTextColor(110, 101, 83);
         const catLabel = project.category === "prototipado" ? "Prototipado" : "Puesta en Marcha";
-        doc.text(`${catLabel}  ·  Presupuesto: ${formatCRC(project.budget)}  ·  Mes: ${formatCRC(projMonto)}`, 17, y + 10);
+        doc.text(`${catLabel}  ·  Presupuesto: ${formatCRCpdf(project.budget)}  ·  Mes: ${formatCRCpdf(projMonto)}`, 17, y + 10);
 
         y += 16;
 
@@ -131,13 +131,13 @@ export default function ReporteMensualClient({ projectReports, months }: Props) 
             t.invoice_number?.slice(0, 24) ?? "—",
             t.supplier?.slice(0, 25) ?? "—",
             t.description?.slice(0, 35) ?? "—",
-            formatCRC(t.amount),
+            formatCRCpdf(t.amount),
             STATUS_LABELS[t.status as keyof typeof STATUS_LABELS] ?? t.status,
             formatDateShort(t.approval_date || t.submission_date),
           ]),
           foot: [[
             { content: "SUBTOTAL", colSpan: 4, styles: { halign: "right", fontStyle: "bold" } },
-            { content: formatCRC(projMonto), styles: { fontStyle: "bold" } },
+            { content: formatCRCpdf(projMonto), styles: { fontStyle: "bold" } },
             "", "",
           ]],
           headStyles: {

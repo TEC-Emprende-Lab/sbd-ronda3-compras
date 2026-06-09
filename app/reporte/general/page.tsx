@@ -1,9 +1,11 @@
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-import type { Project, Tramite } from "@/lib/types";
+import type { Project, Tramite, TramiteType } from "@/lib/types";
 import ReporteGeneralClient from "@/components/ReporteGeneralClient";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
+
+export interface TypeStat { count: number; amount: number; }
 
 export interface ProjectSummary {
   id: number;
@@ -15,7 +17,15 @@ export interface ProjectSummary {
   disponible: number;
   pctEjecutado: number;
   tramites: number;
+  byType: Record<TramiteType, TypeStat>;
 }
+
+const EMPTY_TYPES = (): Record<TramiteType, TypeStat> => ({
+  factura: { count: 0, amount: 0 },
+  reintegro: { count: 0, amount: 0 },
+  uso_tc: { count: 0, amount: 0 },
+  comision_bancaria: { count: 0, amount: 0 },
+});
 
 export default async function ReporteGeneralPage() {
   const supabase = await createServerSupabaseClient();
@@ -32,14 +42,24 @@ export default async function ReporteGeneralPage() {
 
   const summaries: ProjectSummary[] = (projects as Project[] || []).map((p) => {
     const pts = byProject[p.id] || [];
+    const noRech = pts.filter((t) => t.status !== "rechazado");
     const aprobado = pts.filter((t) => t.status === "aprobado").reduce((s, t) => s + t.amount, 0);
-    const enProceso = pts.filter((t) => t.status !== "aprobado" && t.status !== "rechazado").reduce((s, t) => s + t.amount, 0);
+    const enProceso = noRech.filter((t) => t.status !== "aprobado").reduce((s, t) => s + t.amount, 0);
+
+    const byType = EMPTY_TYPES();
+    noRech.forEach((t) => {
+      const k = (t.type in byType ? t.type : "factura") as TramiteType;
+      byType[k].count += 1;
+      byType[k].amount += t.amount;
+    });
+
     return {
       id: p.id, name: p.name, category: p.category, budget: p.budget,
       aprobado, enProceso,
       disponible: p.budget - aprobado - enProceso,
       pctEjecutado: p.budget > 0 ? Math.round((aprobado / p.budget) * 100) : 0,
-      tramites: pts.filter((t) => t.status !== "rechazado").length,
+      tramites: noRech.length,
+      byType,
     };
   });
 
@@ -56,7 +76,7 @@ export default async function ReporteGeneralPage() {
           </Link>
           <h1 style={{ fontWeight: 700, fontSize: 22, color: "var(--black)" }}>Reporte general de proyectos</h1>
           <p style={{ fontSize: 13, color: "var(--gray)", marginTop: 4 }}>
-            Resumen consolidado de presupuesto y ejecución de los 15 proyectos
+            Resumen consolidado con desglose por tipo de trámite y ejecución
           </p>
         </div>
       </div>
