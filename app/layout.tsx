@@ -22,15 +22,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between">
 
-              {/* Logo TEC Emprende Lab (positivo sobre contenedor claro) */}
+              {/* Logo TEC Emprende Lab */}
               <Link href="/" className="flex items-center gap-3" aria-label="TEC Emprende Lab — Inicio">
-                <span style={{
-                  background: "var(--orange)", borderRadius: "var(--radius-md)",
-                  padding: "6px 12px", display: "inline-flex", alignItems: "center", flexShrink: 0,
-                }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/logo-tec.svg" alt="TEC Emprende Lab" style={{ height: 24, width: "auto", display: "block" }} />
-                </span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo-tec.svg" alt="TEC Emprende Lab" style={{ height: 30, width: "auto", display: "block", flexShrink: 0 }} />
                 <span style={{
                   color: "var(--sidebar-muted)", fontSize: 11, paddingLeft: 12,
                   borderLeft: "1px solid var(--sidebar-border)",
