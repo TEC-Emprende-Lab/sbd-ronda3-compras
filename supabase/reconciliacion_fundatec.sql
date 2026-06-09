@@ -223,6 +223,41 @@ WHERE NOT EXISTS (SELECT 1 FROM tramites t WHERE t.project_id = v.project_id AND
 
 
 -- ============================================================
+-- 13. RESERVAS Y AJUSTES (revisión por Excel rpSituacion, 09-06-2026)
+--     Las reservas (rubro "Reservas y compromisos") son OCs colocadas
+--     sin facturar aún. Solo los proyectos de PUESTA EN MARCHA las tienen.
+-- ============================================================
+
+-- 13a. Reservas como placeholder (historical=true: cuentan presupuesto, fuera de reportes)
+INSERT INTO tramites (project_id, type, status, invoice_number, supplier, amount, description, submission_date, historical)
+SELECT 49, 'factura', 'en_sistema_fundatec', 'RESERVA-49', 'Reservas y compromisos (OC pendientes)', 4141367.17, 'Reservas y compromisos FUNDATEC — OC colocadas, pendientes de facturar', '2026-06-08', true
+WHERE NOT EXISTS (SELECT 1 FROM tramites WHERE project_id=49 AND invoice_number='RESERVA-49');
+INSERT INTO tramites (project_id, type, status, invoice_number, supplier, amount, description, submission_date, historical)
+SELECT 66, 'factura', 'en_sistema_fundatec', 'RESERVA-66', 'Reservas y compromisos (OC pendientes)', 3575000.04, 'Reservas y compromisos FUNDATEC — OC colocadas, pendientes de facturar', '2026-06-09', true
+WHERE NOT EXISTS (SELECT 1 FROM tramites WHERE project_id=66 AND invoice_number='RESERVA-66');
+INSERT INTO tramites (project_id, type, status, invoice_number, supplier, amount, description, submission_date, historical)
+SELECT 67, 'factura', 'en_sistema_fundatec', 'RESERVA-67', 'Reservas y compromisos (OC pendientes, rubro 06-09)', 236009.00, 'Reservas y compromisos FUNDATEC — OC colocadas, pendientes de facturar', '2026-06-09', true
+WHERE NOT EXISTS (SELECT 1 FROM tramites WHERE project_id=67 AND invoice_number='RESERVA-67');
+-- (P50,P52,P54,P68,P69 tienen reservas = 0; el textil de P67 ya está como Vital Uniformes)
+
+-- 13b. Visorías (P54) — montos reales finales de FUNDATEC
+UPDATE tramites SET amount=408000 WHERE project_id=54 AND invoice_number='00100001010000000114'; -- 400k + 8k IVA reclasif
+UPDATE tramites SET amount=9084.40,  status='aprobado', approval_date='2026-06-05' WHERE project_id=54 AND invoice_number='WJYNF0MH-0003';
+UPDATE tramites SET amount=45575.00, status='aprobado', approval_date='2026-06-05' WHERE project_id=54 AND invoice_number='7RYVMSRB-0001';
+
+-- 13c. Tropibugs (P67) — fixes tras cruzar el Excel
+-- FUNDATEC ejecutó 028013 (NO 026925) → corregir número y aprobar
+UPDATE tramites SET invoice_number='00600001010000028013', status='aprobado', approval_date='2026-06-09'
+WHERE project_id=67 AND invoice_number='00600001010000026925';
+-- Almacema 134493 ya ejecutada → aprobar
+UPDATE tramites SET status='aprobado', approval_date='2026-06-09'
+WHERE project_id=67 AND invoice_number='02000004010000134493';
+-- Almacema reintegro 034511 = duplicado del congelador EKONO 148659 → papelera
+UPDATE tramites SET deleted_at=NOW()
+WHERE project_id=67 AND invoice_number='02000005010000034511';
+
+
+-- ============================================================
 -- ESTADO FINAL: los 15 proyectos cuadran contra FUNDATEC.
 -- Diferencias residuales = compras reales aún no ejecutadas por
 -- FUNDATEC (P44 ₡20,400 · P50 ₡40,622 · P67 ₡173,310) + redondeo
