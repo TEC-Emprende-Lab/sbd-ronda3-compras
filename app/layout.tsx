@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {/* Logo TEC Emprende Lab */}
               <Link href="/" className="flex items-center gap-3" aria-label="TEC Emprende Lab — Inicio">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo-tec.svg" alt="TEC Emprende Lab" style={{ height: 30, width: "auto", display: "block", flexShrink: 0 }} />
+                <img src="/logo-tec-blanco.png" alt="TEC Emprende Lab" style={{ height: 30, width: "auto", display: "block", flexShrink: 0 }} />
                 <span style={{
                   color: "var(--sidebar-muted)", fontSize: 11, paddingLeft: 12,
                   borderLeft: "1px solid var(--sidebar-border)",

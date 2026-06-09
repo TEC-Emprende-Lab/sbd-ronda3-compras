@@ -2,7 +2,7 @@
 // (jsPDF.addImage no acepta SVG, por eso usamos el PNG extraído del logo.)
 export async function loadLogoDataUrl(): Promise<string | null> {
   try {
-    const res = await fetch("/logo-tec.png");
+    const res = await fetch("/logo-tec-blanco.png");
     if (!res.ok) return null;
     const blob = await res.blob();
     return await new Promise((resolve) => {
