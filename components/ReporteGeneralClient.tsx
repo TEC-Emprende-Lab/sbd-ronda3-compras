@@ -82,7 +82,7 @@ export default function ReporteGeneralClient({ summaries }: { summaries: Project
             formatCRCpdf(s.aprobado),
             formatCRCpdf(s.enProceso),
             formatCRCpdf(s.disponible),
-            s.pctEjecutado,         // numérico: dibujamos barra en didDrawCell
+            `${s.pctEjecutado}%`,   // texto arriba; barra dibujada abajo
             desg || "—",
           ]);
         });
@@ -99,29 +99,26 @@ export default function ReporteGeneralClient({ summaries }: { summaries: Project
         ]],
         headStyles: { fillColor: [26, 22, 18], textColor: [250, 245, 236], fontSize: 7.5 },
         footStyles: { fillColor: [26, 22, 18], textColor: [250, 245, 236], fontStyle: "bold", fontSize: 7.5 },
-        bodyStyles: { fontSize: 7.5, textColor: [26, 22, 18] },
+        bodyStyles: { fontSize: 7.5, textColor: [26, 22, 18], minCellHeight: 9 },
         alternateRowStyles: { fillColor: [250, 245, 236] },
         columnStyles: {
           0: { cellWidth: 70 },
           1: { halign: "right", cellWidth: 32 }, 2: { halign: "right", cellWidth: 32 },
           3: { halign: "right", cellWidth: 30 }, 4: { halign: "right", cellWidth: 32 },
-          5: { cellWidth: 30 }, 6: { cellWidth: 50, fontSize: 6.5 },
+          5: { cellWidth: 30, halign: "center", valign: "top", cellPadding: { top: 1.5, bottom: 4, left: 1, right: 1 } },
+          6: { cellWidth: 50, fontSize: 6.5, valign: "middle" },
         },
-        // Dibujar barra de progreso en la columna %
+        // Barra de progreso dibujada en la parte baja de la celda % (el texto lo pone autoTable arriba)
         didDrawCell: (data) => {
-          if (data.section === "body" && data.column.index === 5 && typeof data.cell.raw === "number") {
-            const pct = Math.min(100, data.cell.raw as number);
-            const x = data.cell.x + 2, cy = data.cell.y + data.cell.height / 2;
-            const bw = data.cell.width - 4;
-            doc.setFillColor(232, 216, 180); doc.roundedRect(x, cy - 1.4, bw, 2.8, 1, 1, "F");
+          if (data.section === "body" && data.column.index === 5) {
+            const pct = Math.min(100, parseInt(String(data.cell.raw)) || 0);
+            const x = data.cell.x + 2.5;
+            const bw = data.cell.width - 5;
+            const barY = data.cell.y + data.cell.height - 3.2;
+            doc.setFillColor(232, 216, 180); doc.roundedRect(x, barY, bw, 2, 1, 1, "F");
             doc.setFillColor(pct > 90 ? 168 : 232, pct > 90 ? 64 : 82, pct > 90 ? 32 : 26);
-            doc.roundedRect(x, cy - 1.4, (bw * pct) / 100, 2.8, 1, 1, "F");
-            doc.setTextColor(46, 40, 32); doc.setFontSize(6.5);
-            doc.text(`${data.cell.raw}%`, x + bw / 2, cy + 4, { align: "center" });
+            doc.roundedRect(x, barY, (bw * pct) / 100, 2, 1, 1, "F");
           }
-        },
-        didParseCell: (data) => {
-          if (data.section === "body" && data.column.index === 5) data.cell.text = [];
         },
       });
 
