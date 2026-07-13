@@ -25,9 +25,22 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Sin timeout propio, un Supabase lento/pausado (plan Free se pausa por
+  // inactividad) cuelga el middleware hasta que Vercel lo mata con
+  // MIDDLEWARE_INVOCATION_TIMEOUT (504), tumbando toda la app. Si Supabase
+  // no responde a tiempo, se trata como "sin sesión" en vez de colgar.
+  let user = null;
+  try {
+    const result = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("auth.getUser timeout")), 8000)
+      ),
+    ]);
+    user = result.data.user;
+  } catch {
+    user = null;
+  }
 
   if (!user && !request.nextUrl.pathname.startsWith("/login")) {
     const url = request.nextUrl.clone();
