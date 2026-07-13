@@ -140,6 +140,7 @@ function TramiteRow({ tramite: t }: { tramite: Tramite }) {
     reintegro: "badge badge-purple",
     uso_tc:    "badge badge-amber",
     factura:   "badge badge-blue",
+    pago_contrato: "badge badge-green",
   };
 
   return (
