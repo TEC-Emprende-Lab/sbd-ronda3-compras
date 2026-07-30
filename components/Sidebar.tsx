@@ -4,11 +4,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-interface NavItem {
+type IconComp = (props: { className?: string }) => React.ReactNode;
+
+interface NavLink {
   href: string;
   label: string;
-  icon: (props: { className?: string }) => React.ReactNode;
+  icon: IconComp;
   exact?: boolean;
+}
+interface NavGroup {
+  label: string;
+  icon: IconComp;
+  children: NavLink[];
+}
+type NavEntry = NavLink | NavGroup;
+
+function isGroup(entry: NavEntry): entry is NavGroup {
+  return "children" in entry;
 }
 
 function IconHome({ className }: { className?: string }) {
@@ -68,6 +80,13 @@ function IconClose({ className }: { className?: string }) {
     </svg>
   );
 }
+function IconChevron({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+    </svg>
+  );
+}
 function IconLogout({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
@@ -76,31 +95,84 @@ function IconLogout({ className }: { className?: string }) {
   );
 }
 
-const NAV: NavItem[] = [
+const NAV: NavEntry[] = [
   { href: "/", label: "Proyectos", icon: IconHome, exact: true },
-  { href: "/reporte", label: "Sesión", icon: IconClock },
-  { href: "/reporte/mensual", label: "Mensual", icon: IconBarChart },
-  { href: "/reporte/general", label: "General", icon: IconPieChart },
+  {
+    label: "Reportes",
+    icon: IconBarChart,
+    children: [
+      { href: "/reporte", label: "Sesión", icon: IconClock },
+      { href: "/reporte/mensual", label: "Mensual", icon: IconBarChart },
+      { href: "/reporte/general", label: "General", icon: IconPieChart },
+    ],
+  },
   { href: "/papelera", label: "Papelera", icon: IconTrash },
 ];
+
+function linkClass() {
+  return "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 active:scale-95";
+}
+function linkStyle(active: boolean): React.CSSProperties {
+  return {
+    background: active ? "var(--surface-brand-active)" : "transparent",
+    color: active ? "var(--surface-brand-active-text)" : "rgba(255,255,255,.85)",
+    fontWeight: active ? 600 : 500,
+  };
+}
+
+function NavGroupItem({ group, pathname, onNavigate }: { group: NavGroup; pathname: string; onNavigate?: () => void }) {
+  const childActive = group.children.some((c) => pathname.startsWith(c.href));
+  const [manualOpen, setManualOpen] = useState<boolean | null>(null);
+  const open = manualOpen ?? childActive;
+  const Icon = group.icon;
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setManualOpen(!open)}
+        aria-expanded={open}
+        className={`${linkClass()} w-full`}
+        style={linkStyle(false)}
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="flex-1 text-left">{group.label}</span>
+        <IconChevron className={`h-3.5 w-3.5 shrink-0 transition-transform duration-150 ${open ? "rotate-90" : ""}`} />
+      </button>
+      {open && (
+        <div className="mt-0.5 space-y-0.5 pl-4">
+          {group.children.map(({ href, label, icon: ChildIcon }) => {
+            const active = pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                onClick={onNavigate}
+                className={linkClass()}
+                style={linkStyle(active)}
+              >
+                <ChildIcon className="h-4 w-4 shrink-0" />
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
   return (
     <nav aria-label="Navegación principal" className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
-      {NAV.map(({ href, label, icon: Icon, exact }) => {
+      {NAV.map((entry) => {
+        if (isGroup(entry)) {
+          return <NavGroupItem key={entry.label} group={entry} pathname={pathname} onNavigate={onNavigate} />;
+        }
+        const { href, label, icon: Icon, exact } = entry;
         const active = exact ? pathname === href : pathname.startsWith(href);
         return (
-          <Link
-            key={href}
-            href={href}
-            onClick={onNavigate}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 active:scale-95"
-            style={{
-              background: active ? "var(--surface-brand-active)" : "transparent",
-              color: active ? "var(--surface-brand-active-text)" : "rgba(255,255,255,.85)",
-              fontWeight: active ? 600 : 500,
-            }}
-          >
+          <Link key={href} href={href} onClick={onNavigate} className={linkClass()} style={linkStyle(active)}>
             <Icon className="h-4 w-4 shrink-0" />
             {label}
           </Link>
