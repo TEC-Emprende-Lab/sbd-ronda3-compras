@@ -60,6 +60,14 @@ body {
   outline-offset: 2px;
 }
 
+/* ── Shell de producto (manual §4.1) ───────────────────────── */
+.app-shell    { display: flex; min-height: 100vh; }
+.main-wrapper { display: flex; flex-direction: column; min-height: 100vh; min-width: 0; flex: 1; }
+.main-content { flex: 1; padding: 28px 32px; min-width: 0; overflow-x: clip; }
+@media (max-width: 767px) {
+  .main-content { padding: 16px; padding-top: 72px; } /* espacio para la barra superior móvil */
+}
+
 /* ── Scrollbar ─────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
