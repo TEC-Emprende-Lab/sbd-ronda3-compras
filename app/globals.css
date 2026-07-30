@@ -13,6 +13,9 @@
   --orange:      #E8521A;
   --orange-l:    #F07040;
   --orange-d:    #A84020;
+  --amber:       #A06800;
+  --amber-l:     #FBEFD6;
+  --amber-d:     #7A4F00;
   --black:       #1A1612;
   --black-2:     #2E2820;
   --gray:        #6E6553;
@@ -21,10 +24,13 @@
   --green-l:     #EAF0D0;
   --blue:        #8098C8;
   --blue-l:      #EEF3FF;
-  --sidebar-bg:  #1A1612;
-  --sidebar-text: #FAF5EC;
-  --sidebar-muted: #B3A892;
-  --sidebar-border: #3A332B;
+  --surface-brand:        #B85A22;
+  --surface-brand-active: #E4C99A;
+  --surface-brand-active-text: #4A4A4A;
+  --sidebar-bg:  var(--surface-brand);
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: rgba(255,255,255,.7);
+  --sidebar-border: rgba(255,255,255,.32);
   --shadow-card: 0 1px 2px rgba(26,22,18,.04);
   --font-display: 'Poppins', sans-serif;
   --font-body:    'Poppins', sans-serif;
@@ -124,7 +130,7 @@ body {
   font-size: 11px; font-weight: 500;
 }
 .badge-orange  { background: #FEE5D8; color: var(--orange-d); }
-.badge-amber   { background: #FEF3C7; color: #92400E; }
+.badge-amber   { background: var(--amber-l); color: var(--amber-d); border: 1px solid var(--amber); }
 .badge-green   { background: var(--green-l); color: var(--green); }
 .badge-red     { background: #FEE2E2; color: #991B1B; }
 .badge-blue    { background: var(--blue-l); color: #3730A3; }
