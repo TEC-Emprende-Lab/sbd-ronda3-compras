@@ -1,6 +1,8 @@
 const SOIN_HOST = "sistemafundatec.tec.ac.cr";
 const TARGET_URL = "https://sbd-ronda3-compras.vercel.app/reporte/fundatec";
-const FILENAME_PATTERN = /rpSituacion\.xls$/i;
+// Chrome agrega " (1)", " (2)"... cuando ya existe un archivo con ese
+// nombre en Descargas — el patrón debe aceptar esas variantes.
+const FILENAME_PATTERN = /rpSituacion(\s*\(\d+\))?\.xls$/i;
 
 chrome.downloads.onChanged.addListener(async (delta) => {
   if (!delta.state || delta.state.current !== "complete") return;
