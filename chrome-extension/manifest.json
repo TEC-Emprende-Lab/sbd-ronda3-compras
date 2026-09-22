@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Catalitec: auto-conciliar FUNDATEC",
+  "version": "1.0.0",
+  "description": "Al descargar el reporte rpSituacion.xls del SOIN, lo abre automáticamente en la herramienta de conciliación de Catalitec (sbd-ronda3-compras).",
+  "permissions": ["downloads"],
+  "host_permissions": [
+    "https://sistemafundatec.tec.ac.cr:8500/*",
+    "https://sbd-ronda3-compras.vercel.app/*",
+    "file:///*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://sbd-ronda3-compras.vercel.app/*"],
+      "js": ["content-script.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

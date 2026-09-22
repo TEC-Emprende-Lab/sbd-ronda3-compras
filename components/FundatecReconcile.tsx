@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase";
 import { parseFundatecReport, sumByDocumento, type FundatecReport } from "@/lib/fundatec-parser";
 import type { Project } from "@/lib/types";
@@ -30,9 +30,28 @@ export default function FundatecReconcile({ projects }: { projects: Project[] })
   const [moving, setMoving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const processHtml = useCallback(
+    async (html: string) => {
+      setError(null);
+      setResults([]);
+      const parsed = parseFundatecReport(html);
+      if (parsed.rows.length === 0) {
+        setError("No se encontraron filas de movimientos en el archivo. ¿Es un reporte rpSituacion válido?");
+        return;
+      }
+      setReport(parsed);
+
+      const match = projects.find(
+        (p) => String(p.id).padStart(8, "0") === parsed.projectCode || p.name === parsed.projectName
+      );
+      setSelectedProjectId(match ? match.id : null);
+      if (match) await reconcile(parsed, match.id);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [projects]
+  );
+
   async function handleFile(file: File) {
-    setError(null);
-    setResults([]);
     const text = await file.text().catch(() => null);
     // El archivo suele venir en ISO-8859-1; si file.text() trae caracteres
     // rotos (ñ/tildes), reintenta decodificando explícito.
@@ -41,20 +60,23 @@ export default function FundatecReconcile({ projects }: { projects: Project[] })
       const buf = await file.arrayBuffer();
       html = new TextDecoder("iso-8859-1").decode(buf);
     }
-
-    const parsed = parseFundatecReport(html);
-    if (parsed.rows.length === 0) {
-      setError("No se encontraron filas de movimientos en el archivo. ¿Es un reporte rpSituacion válido?");
-      return;
-    }
-    setReport(parsed);
-
-    const match = projects.find(
-      (p) => String(p.id).padStart(8, "0") === parsed.projectCode || p.name === parsed.projectName
-    );
-    setSelectedProjectId(match ? match.id : null);
-    if (match) await reconcile(parsed, match.id);
+    await processHtml(html);
   }
+
+  // Puente con la extensión de Chrome: al descargar el rpSituacion.xls del
+  // SOIN, la extensión abre esta página y despacha este evento con el
+  // contenido ya leído, sin que haya que volver a seleccionar el archivo.
+  useEffect(() => {
+    function onAutoload(e: Event) {
+      const detail = (e as CustomEvent<{ html: string }>).detail;
+      if (detail?.html) processHtml(detail.html);
+    }
+    window.addEventListener("fundatec-tracker:autoload", onAutoload);
+    // Avisa a la extensión (si está instalada y ya cargó su content script)
+    // que la página está lista, por si el archivo llegó antes de esto.
+    window.dispatchEvent(new CustomEvent("fundatec-tracker:ready"));
+    return () => window.removeEventListener("fundatec-tracker:autoload", onAutoload);
+  }, [processHtml]);
 
   async function reconcile(parsed: FundatecReport, projectId: number) {
     setLoading(true);
