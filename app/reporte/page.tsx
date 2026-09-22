@@ -42,9 +42,14 @@ export default async function ReportePage() {
             Actividad por día — aprobados y trámites en proceso con su estado
           </p>
         </div>
-        <Link href="/reporte/mensual" className="btn btn-ghost btn-sm" style={{ flexShrink: 0 }}>
-          Reporte mensual →
-        </Link>
+        <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+          <Link href="/reporte/fundatec" className="btn btn-ghost btn-sm">
+            Conciliar con FUNDATEC
+          </Link>
+          <Link href="/reporte/mensual" className="btn btn-ghost btn-sm">
+            Reporte mensual →
+          </Link>
+        </div>
       </div>
 
       {dates.length === 0 ? (
