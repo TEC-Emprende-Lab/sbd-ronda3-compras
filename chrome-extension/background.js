@@ -4,6 +4,12 @@ const TARGET_URL = "https://sbd-ronda3-compras.vercel.app/reporte/fundatec";
 // nombre en Descargas — el patrón debe aceptar esas variantes.
 const FILENAME_PATTERN = /rpSituacion(\s*\(\d+\))?\.xls$/i;
 
+// Pestañas cuyo content script ya avisó que está listo para recibir, y
+// archivos en espera de que su pestaña destino avise (evita depender de
+// un tiempo fijo de espera, que es frágil).
+const readyTabs = new Set();
+const pendingHtmlByTab = new Map();
+
 chrome.downloads.onChanged.addListener(async (delta) => {
   if (!delta.state || delta.state.current !== "complete") return;
 
@@ -13,7 +19,7 @@ chrome.downloads.onChanged.addListener(async (delta) => {
 
   // Solo reacciona a descargas que vinieron del SOIN, para no dispararse
   // con cualquier archivo que por casualidad se llame igual.
-  if (item.url && !item.url.includes(SOIN_HOST) && !item.referrer?.includes(SOIN_HOST)) {
+  if (item.url && !item.url.includes(SOIN_HOST) && !(item.referrer || "").includes(SOIN_HOST)) {
     return;
   }
 
@@ -41,26 +47,39 @@ async function openOrFocusTargetTab(html) {
 
   if (!tab) {
     tab = await chrome.tabs.create({ url: TARGET_URL });
-    await waitForTabLoad(tab.id);
   } else {
     await chrome.tabs.update(tab.id, { active: true });
   }
 
-  // Pequeño margen para que el content script y el listener de React
-  // terminen de montarse tras la navegación/activación.
-  setTimeout(() => {
-    chrome.tabs.sendMessage(tab.id, { type: "fundatec-autoload", html }).catch(() => {});
-  }, 300);
+  sendOrQueue(tab.id, html);
 }
 
-function waitForTabLoad(tabId) {
-  return new Promise((resolve) => {
-    function listener(id, info) {
-      if (id === tabId && info.status === "complete") {
-        chrome.tabs.onUpdated.removeListener(listener);
-        resolve();
-      }
-    }
-    chrome.tabs.onUpdated.addListener(listener);
-  });
+function sendOrQueue(tabId, html) {
+  if (readyTabs.has(tabId)) {
+    chrome.tabs
+      .sendMessage(tabId, { type: "fundatec-autoload", html })
+      .catch((err) => console.error("[Catalitec] Error enviando el archivo a la pestaña:", err));
+  } else {
+    // La pestaña (content script + React) todavía no avisó que está
+    // lista; se envía en cuanto llegue el mensaje "fundatec-tracker-ready".
+    pendingHtmlByTab.set(tabId, html);
+  }
 }
+
+chrome.runtime.onMessage.addListener((msg, sender) => {
+  if (msg && msg.type === "fundatec-tracker-ready" && sender.tab) {
+    readyTabs.add(sender.tab.id);
+    const pending = pendingHtmlByTab.get(sender.tab.id);
+    if (pending) {
+      chrome.tabs
+        .sendMessage(sender.tab.id, { type: "fundatec-autoload", html: pending })
+        .catch((err) => console.error("[Catalitec] Error enviando el archivo pendiente:", err));
+      pendingHtmlByTab.delete(sender.tab.id);
+    }
+  }
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  readyTabs.delete(tabId);
+  pendingHtmlByTab.delete(tabId);
+});
