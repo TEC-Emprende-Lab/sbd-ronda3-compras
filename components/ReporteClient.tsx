@@ -38,6 +38,7 @@ const TYPE_BADGE: Record<string, string> = {
   reintegro: "badge badge-purple",
   uso_tc:    "badge badge-amber",
   factura:   "badge badge-blue",
+  pago_contrato: "badge badge-green",
 };
 
 export default function ReporteClient({ byDate, dates }: Props) {

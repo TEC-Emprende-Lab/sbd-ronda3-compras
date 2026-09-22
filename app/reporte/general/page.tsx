@@ -25,6 +25,7 @@ const EMPTY_TYPES = (): Record<TramiteType, TypeStat> => ({
   reintegro: { count: 0, amount: 0 },
   uso_tc: { count: 0, amount: 0 },
   comision_bancaria: { count: 0, amount: 0 },
+  pago_contrato: { count: 0, amount: 0 },
 });
 
 export default async function ReporteGeneralPage() {

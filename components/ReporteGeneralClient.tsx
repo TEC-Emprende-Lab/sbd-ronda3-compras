@@ -11,10 +11,11 @@ const CAT_LABEL: Record<string, string> = {
 };
 
 const TYPE_META: { key: TramiteType; label: string; color: string }[] = [
-  { key: "factura",           label: "Compras OC",  color: "#8098C8" },
-  { key: "reintegro",         label: "Reintegros",  color: "#6D28D9" },
-  { key: "uso_tc",            label: "Uso de TC",   color: "#E8A33A" },
-  { key: "comision_bancaria", label: "Comisiones",  color: "#8A8070" },
+  { key: "factura",           label: "Compras OC",     color: "#8098C8" },
+  { key: "reintegro",         label: "Reintegros",     color: "#6D28D9" },
+  { key: "uso_tc",            label: "Uso de TC",      color: "#E8A33A" },
+  { key: "comision_bancaria", label: "Comisiones",     color: "#8A8070" },
+  { key: "pago_contrato",     label: "Pago Contrato",  color: "#3D7A5A" },
 ];
 
 export default function ReporteGeneralClient({ summaries }: { summaries: ProjectSummary[] }) {

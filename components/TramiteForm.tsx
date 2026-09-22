@@ -23,6 +23,7 @@ const APPROVAL_NOTES: Record<TramiteType, string> = {
   factura:   "Compra aprobada por el gestor técnico, comprobable en minuta adjunta.\nMontos y detalles correctos.",
   uso_tc:    "Compra aprobada por el gestor técnico, comprobable en minuta adjunta.\nMontos y detalles correctos.",
   comision_bancaria: "Comisión bancaria registrada según movimiento del estado de cuenta FUNDATEC.",
+  pago_contrato: "Pago de contrato aprobado por el gestor técnico, comprobable en minuta adjunta.\nMontos y detalles correctos.",
 };
 
 export default function TramiteForm({ projects, defaultProjectId, tramite }: Props) {

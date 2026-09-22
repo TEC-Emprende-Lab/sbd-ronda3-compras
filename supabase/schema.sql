@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS projects (
 CREATE TABLE IF NOT EXISTS tramites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id INT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK (type IN ('factura', 'reintegro', 'uso_tc', 'comision_bancaria')),
+  type TEXT NOT NULL CHECK (type IN ('factura', 'reintegro', 'uso_tc', 'comision_bancaria', 'pago_contrato')),
   status TEXT NOT NULL DEFAULT 'en_proceso_firmas'
     CHECK (status IN ('en_proceso_firmas', 'en_sistema_fundatec', 'aprobado', 'rechazado')),
   invoice_number TEXT,

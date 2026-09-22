@@ -13,6 +13,9 @@
   --orange:      #E8521A;
   --orange-l:    #F07040;
   --orange-d:    #A84020;
+  --amber:       #A06800;
+  --amber-l:     #FBEFD6;
+  --amber-d:     #7A4F00;
   --black:       #1A1612;
   --black-2:     #2E2820;
   --gray:        #6E6553;
@@ -21,10 +24,13 @@
   --green-l:     #EAF0D0;
   --blue:        #8098C8;
   --blue-l:      #EEF3FF;
-  --sidebar-bg:  #1A1612;
-  --sidebar-text: #FAF5EC;
-  --sidebar-muted: #B3A892;
-  --sidebar-border: #3A332B;
+  --surface-brand:        #B85A22;
+  --surface-brand-active: #E4C99A;
+  --surface-brand-active-text: #4A4A4A;
+  --sidebar-bg:  var(--surface-brand);
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: rgba(255,255,255,.7);
+  --sidebar-border: rgba(255,255,255,.32);
   --shadow-card: 0 1px 2px rgba(26,22,18,.04);
   --font-display: 'Poppins', sans-serif;
   --font-body:    'Poppins', sans-serif;
@@ -52,6 +58,14 @@ body {
 :focus-visible {
   outline: 2px solid var(--orange);
   outline-offset: 2px;
+}
+
+/* ── Shell de producto (manual §4.1) ───────────────────────── */
+.app-shell    { display: flex; min-height: 100vh; }
+.main-wrapper { display: flex; flex-direction: column; min-height: 100vh; min-width: 0; flex: 1; }
+.main-content { flex: 1; padding: 28px 32px; min-width: 0; overflow-x: clip; }
+@media (max-width: 767px) {
+  .main-content { padding: 16px; padding-top: 72px; } /* espacio para la barra superior móvil */
 }
 
 /* ── Scrollbar ─────────────────────────────────────────────── */
@@ -124,7 +138,7 @@ body {
   font-size: 11px; font-weight: 500;
 }
 .badge-orange  { background: #FEE5D8; color: var(--orange-d); }
-.badge-amber   { background: #FEF3C7; color: #92400E; }
+.badge-amber   { background: var(--amber-l); color: var(--amber-d); border: 1px solid var(--amber); }
 .badge-green   { background: var(--green-l); color: var(--green); }
 .badge-red     { background: #FEE2E2; color: #991B1B; }
 .badge-blue    { background: var(--blue-l); color: #3730A3; }

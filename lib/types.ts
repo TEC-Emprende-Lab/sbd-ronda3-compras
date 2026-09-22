@@ -1,6 +1,6 @@
 export type Category = "prototipado" | "puesta_en_marcha";
 
-export type TramiteType = "factura" | "reintegro" | "uso_tc" | "comision_bancaria";
+export type TramiteType = "factura" | "reintegro" | "uso_tc" | "comision_bancaria" | "pago_contrato";
 
 export type TramiteStatus =
   | "en_proceso_firmas"
@@ -44,6 +44,7 @@ export const TRAMITE_TYPE_LABELS: Record<TramiteType, string> = {
   reintegro: "Reintegro",
   uso_tc: "Uso de TC",
   comision_bancaria: "Comisión Bancaria",
+  pago_contrato: "Pago Contrato",
 };
 
 export const STATUS_LABELS: Record<TramiteStatus, string> = {
@@ -95,6 +96,17 @@ export const CHECKLISTS: Record<TramiteType, Record<string, string>> = {
   comision_bancaria: {
     fechas: "Fecha",
     monto: "Monto",
+    colones: "Colones",
+  },
+  pago_contrato: {
+    morosidad: "Morosidad",
+    justificacion: "Justificación",
+    numero_contrato: "N° Contrato",
+    nombre_beneficiario: "A nombre del beneficiario",
+    detalles_contrato: "Detalles del contrato/servicio",
+    fechas: "Fechas",
+    monto: "Monto",
+    minuta: "Minuta",
     colones: "Colones",
   },
 };
