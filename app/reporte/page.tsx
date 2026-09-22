@@ -1,6 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import ReporteClient from "@/components/ReporteClient";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -41,14 +40,6 @@ export default async function ReportePage() {
           <p style={{ fontSize: 13, color: "var(--gray)", marginTop: 4 }}>
             Actividad por día — aprobados y trámites en proceso con su estado
           </p>
-        </div>
-        <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-          <Link href="/reporte/fundatec" className="btn btn-ghost btn-sm">
-            Conciliar con FUNDATEC
-          </Link>
-          <Link href="/reporte/mensual" className="btn btn-ghost btn-sm">
-            Reporte mensual →
-          </Link>
         </div>
       </div>
 

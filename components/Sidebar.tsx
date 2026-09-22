@@ -52,6 +52,13 @@ function IconPieChart({ className }: { className?: string }) {
     </svg>
   );
 }
+function IconCheckBadge({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+  );
+}
 function IconTrash({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
@@ -104,6 +111,7 @@ const NAV: NavEntry[] = [
       { href: "/reporte", label: "Sesión", icon: IconClock },
       { href: "/reporte/mensual", label: "Mensual", icon: IconBarChart },
       { href: "/reporte/general", label: "General", icon: IconPieChart },
+      { href: "/reporte/fundatec", label: "Conciliar FUNDATEC", icon: IconCheckBadge },
     ],
   },
   { href: "/papelera", label: "Papelera", icon: IconTrash },
