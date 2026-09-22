@@ -80,7 +80,13 @@ export function parseFundatecReport(html: string): FundatecReport {
     const fecha = ddmmyyyyToISO(cells[5]);
     const monto = parseFloat(cells[7].replace(/,/g, "")) || 0;
 
-    const facturaMatch = descripcionRaw.match(/(?:Factura#|FACT#)\s*([0-9]+)/i);
+    // No todas las filas traen "Factura#"/"FACT#": algunas solo dejan el
+    // número suelto al final de la descripción (ej. "Servicio de
+    // fumigación . 00100001010000001234"). Se usa como respaldo un
+    // número largo (15-20 dígitos, formato de factura electrónica CR).
+    const facturaMatch =
+      descripcionRaw.match(/(?:Factura#|FACT#)\s*([0-9]+)/i) ||
+      descripcionRaw.match(/\b([0-9]{15,20})\b/);
     const ocMatch = descripcionRaw.match(/OC\s*#\s*([0-9]+)/i);
 
     // Limpia número de factura/OC repetidos de la descripción
